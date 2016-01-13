@@ -188,7 +188,7 @@ class OptimizationModel(po.ConcreteModel):
                                           cost_objects=cost_objects,
                                           revenue_objects=revenue_objects)
 
-    def results(self):
+    def results(self, timesteps=None, result=None):
         """ Returns a nested dictionary of the results of this optimization
         model.
 
@@ -213,61 +213,117 @@ class OptimizationModel(po.ConcreteModel):
 
         Note that the optimization model has to be solved prior to invoking
         this method.
+
+        Parameters
+        -----------
+        timesteps : array like
+            list or python range-object containing the timesteps for which
+            results are read from the solved :class:`OptimizationModel
+            <oemof.solph.OptimizationModel>` instance.
+        result : dict
+            dictionary containing results constructed by this method:
+            :meth:`om.results() <OptimizationModel.results>`
         """
-        result = {}
+        if result is None:
+            result = {}
+        if timesteps is None:
+            timesteps = self.timesteps
+
         for entity in self.entities:
             if (  isinstance(entity, cp.Transformer) or
                   isinstance(entity, cp.Transport)   or
                   isinstance(entity, cp.Source)):
                 if entity.outputs: result[entity] = result.get(entity, {})
                 for o in entity.outputs:
-                    result[entity][o] = [self.w[entity.uid, o.uid, t].value
-                                         for t in self.timesteps]
+                    if not result[entity].get(o):
+                        result[entity][o] = [self.w[entity.uid, o.uid, t].value
+                                             for t in timesteps]
+                    else:
+                        result[entity][o].extend(
+                                            [self.w[entity.uid, o.uid, t].value
+                                             for t in timesteps])
 
                 for i in entity.inputs:
                     result[i] = result.get(i, {})
-                    result[i][entity] = [self.w[i.uid, entity.uid, t].value
-                                         for t in self.timesteps]
+                    if not result[i].get(entity):
+                        result[i][entity] = [self.w[i.uid, entity.uid, t].value
+                                             for t in timesteps]
+                    else:
+                        result[i][entity].extend(
+                                            [self.w[i.uid, entity.uid, t].value
+                                                    for t in timesteps])
 
             if isinstance(entity, cp.sources.DispatchSource):
                 result[entity] = result.get(entity, {})
                 # TODO: Why does this use `entity.outputs[0]`?
-                result[entity][entity] = [self.w[entity.uid,
-                                                 entity.outputs[0].uid,
-                                                 t].bounds[1]
-                                          for t in self.timesteps]
+                if not result[entity].get(entity):
+                    result[entity][entity] = [self.w[entity.uid,
+                                                     entity.outputs[0].uid,
+                                                     t].bounds[1]
+                                              for t in timesteps]
+                else:
+                    result[entity][entity].extend([
+                        self.w[entity.uid, entity.outputs[0].uid, t].bounds[1]
+                        for t in timesteps])
 
             if isinstance(entity, cp.Sink):
                 for i in entity.inputs:
                     result[i] = result.get(i, {})
-                    result[i][entity] = [self.w[i.uid, entity.uid, t].value
-                                         for t in self.timesteps]
+                    if not result[i].get(entity):
+                        result[i][entity] = [self.w[i.uid, entity.uid, t].value
+                                             for t in timesteps]
+                    else:
+                        result[i][entity].extend(
+                                            [self.w[i.uid, entity.uid, t].value
+                                             for t in timesteps])
 
             if isinstance(entity, cp.transformers.Storage):
                 result[entity] = result.get(entity, {})
-                result[entity][entity] = [getattr(self, str(Storage)
-                                                 ).cap[entity.uid, t].value
-                                          for t in self.timesteps]
-
+                if not entity.get(entity):
+                    result[entity][entity] = [getattr(self, str(Storage)
+                                                     ).cap[entity.uid, t].value
+                                              for t in timesteps]
+                else:
+                    result[entity][entity].extend(
+                                             [getattr(self, str(Storage)
+                                                     ).cap[entity.uid, t].value
+                                              for t in timesteps])
         if hasattr(self, "dual"):
             for bus in getattr(self, str(Bus)).objs:
                 if bus.balanced:
                     result[bus] = result.get(bus, {})
-                    result[bus][bus] = [
-                        self.dual[getattr(self, str(Bus)).balance[(bus.uid, t)]]
-                        for t in self.timesteps]
+                    if not result[bus].get(bus):
+                        result[bus][bus] = [self.dual[getattr(self, str(Bus)
+                                                ).balance[(bus.uid, t)]]
+                                            for t in timesteps]
+                    else:
+                        result[bus][bus].extend(
+                                            [self.dual[getattr(self, str(Bus)
+                                                ).balance[(bus.uid, t)]]
+                                            for t in timesteps])
 
         for bus in getattr(self, str(Bus)).objs:
             if bus.excess:
                 result[bus] = result.get(bus, {})
-                result[bus]['excess'] = [
-                    getattr(self, str(Bus)).excess_slack[(bus.uid, t)].value
-                    for t in self.timesteps]
+                if not result[bus].get('excess'):
+                    result[bus]['excess'] = [
+                        getattr(self, str(Bus)).excess_slack[(bus.uid, t)].value
+                        for t in timesteps]
+                else:
+                    result[bus]['excess'].extend([
+                        getattr(self, str(Bus)).excess_slack[(bus.uid, t)].value
+                        for t in timesteps])
+
             if bus.shortage:
                 result[bus] = result.get(bus, {})
-                result[bus]['shortage'] = [
-                    getattr(self, str(Bus)).shortage_slack[(bus.uid, t)].value
-                    for t in self.timesteps]
+                if not result[bus].get('shortage'):
+                    result[bus]['shortage'] = [getattr(self, str(Bus)
+                        ).shortage_slack[(bus.uid, t)].value
+                        for t in timesteps]
+                else:
+                    result[bus]['shortage'].extemd([getattr(self, str(Bus)
+                        ).shortage_slack[(bus.uid, t)].value
+                        for t in timesteps])
 
         return result
 
