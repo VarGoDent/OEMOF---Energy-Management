@@ -78,6 +78,7 @@ class OptimizationModel(po.ConcreteModel):
         super().__init__()
 
         self.entities = energysystem.entities
+        self.simulation = energysystem.simulation
         self.timesteps = energysystem.simulation.timesteps
         self.objective_options = energysystem.simulation.objective_options
         self.relaxed = getattr(energysystem.simulation, 'relaxed', False)
@@ -279,7 +280,7 @@ class OptimizationModel(po.ConcreteModel):
 
             if isinstance(entity, cp.transformers.Storage):
                 result[entity] = result.get(entity, {})
-                if not entity.get(entity):
+                if not result[entity].get(entity):
                     result[entity][entity] = [getattr(self, str(Storage)
                                                      ).cap[entity.uid, t].value
                                               for t in timesteps]

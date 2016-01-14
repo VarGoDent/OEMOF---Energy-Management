@@ -499,26 +499,30 @@ def add_storage_balance(model, block):
     eta_out = {}
 
     for e in block.objs:
-        cap_initial[e.uid] = e.cap_initial
+        if model.simulation.rolling:
+            cap_initial[e.uid] = 0
+        else:
+            cap_initial[e.uid] = e.cap_initial
         cap_loss[e.uid] = e.cap_loss
         eta_in[e.uid] = e.eta_in
         eta_out[e.uid] = e.eta_out
 
     # set cap of last timesteps to fixed value of cap_initial
-    t_last = len(model.timesteps)-1
-    for e in block.uids:
-      block.cap[e, t_last] = cap_initial[e]
-      block.cap[e, t_last].fix()
+
+    if not model.simulation.rolling:
+        for e in block.uids:
+          block.cap[e, model.timesteps[-1]] = cap_initial[e]
+          block.cap[e, model.timesteps[-1]].fix()
 
     def storage_balance_rule(block, e, t):
         # TODO:
         #   - include time increment
         expr = 0
-        if(t == 0):
+        if(t == model.timesteps[0] and t == 0):
             expr += block.cap[e, t] - cap_initial[e]
             expr += - model.w[model.I[e], e, t] * eta_in[e]
             expr += + model.w[e, model.O[e][0], t] / eta_out[e]
-        else:
+        elif(t > model.timesteps[0]):
             expr += block.cap[e, t]
             expr += - block.cap[e, t-1] * (1 - cap_loss[e])
             expr += - model.w[model.I[e], e, t] * eta_in[e]
@@ -624,7 +628,7 @@ def add_output_gradient_calc(model, block, grad_direc='both'):
                           'which output gradient constraints should be set.')
 
     def grad_pos_calc_rule(block, e, t):
-        if t > 0:
+        if t > model.timesteps[0]:
             lhs = model.w[e, model.O[e][0], t] - model.w[e,model.O[e][0], t-1]
             rhs = block.grad_pos_var[e, t]
             return(lhs <= rhs)
@@ -632,7 +636,7 @@ def add_output_gradient_calc(model, block, grad_direc='both'):
             return(po.Constraint.Skip)
 
     def grad_neg_calc_rule(block, e, t):
-        if t > 0:
+        if t > model.timesteps[0]:
             lhs = model.w[e, model.O[e][0], t-1] - model.w[e,model.O[e][0], t]
             rhs = block.grad_neg_var[e, t]
             return(lhs <= rhs)
