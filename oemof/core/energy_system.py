@@ -273,6 +273,8 @@ class Simulation:
     relaxed : boolean
         If True, integer variables will be relaxed
         (only relevant for milp-problems)
+    rolling : boolean
+        If True, model is build for a rolling optimization
     """
     def __init__(self, **kwargs):
         ''
@@ -283,6 +285,7 @@ class Simulation:
         self.duals = kwargs.get('duals', False)
         self.timesteps = kwargs.get('timesteps')
         self.relaxed = kwargs.get('relaxed', False)
+        self.rolling = kwargs.get('rolling', False)
 
         if self.timesteps is None:
             raise ValueError('No timesteps defined!')
