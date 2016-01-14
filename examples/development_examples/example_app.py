@@ -26,10 +26,14 @@ from oemof.core.network.entities import Bus
 from oemof.core.network.entities.components import sinks as sink
 from oemof.core.network.entities.components import sources as source
 from oemof.core.network.entities.components import transformers as transformer
+from oemof.outputlib import to_pandas as tpd
+from oemof.tools import logger
 
 import pandas as pd
 import logging
-logging.basicConfig(filename='example_app.log', level=logging.DEBUG)
+
+
+logger.define_logging()
 
 data = pd.read_csv("example_data.csv", sep=",")
 timesteps = [t for t in range(168)]
@@ -54,9 +58,9 @@ b_th = Bus(uid="b_th", type="th", excess=True, shortage=False)
 # renewable sources (only pv onshore)
 wind_on = source.DispatchSource(uid="wind_on", outputs=[b_el],
                                 val=data['wind'],
-                                out_max=[66.300], opex_var=0, opex_fix=10)
+                                out_max=[66.300], dispatch_costs=0, opex_fix=0)
 pv = source.DispatchSource(uid="pv", outputs=[b_el], val=data['pv'],
-                           out_max=[65.300])
+                           out_max=[65.300], opex_var=0)
 
 # demands
 demand_el = sink.Simple(uid="demand_el", inputs=[b_el],
@@ -87,58 +91,47 @@ pp_chp = transformer.CHP(uid='pp_chp', inputs=[bgas], outputs=[b_el, b_th],
                          out_max=[40, 30],
                          eta=[0.4, 0.3], opex_fix=0, opex_var=50,
                          co2_var=em_gas)
-
+stor = transformer.Storage(uid='storage', inputs=[b_el], outputs=[b_el],
+                           cap_max=100, cap_initial=0, opex_var=0,
+                           out_max=[2], in_max=[2])
 # group busses
 buses = [bcoal, bgas, boil, blig, b_el, b_th]
 
 # group components
-transformers = [pp_coal, pp_lig, pp_gas, pp_oil, pp_chp]
+transformers = [pp_coal, pp_lig, pp_gas, pp_oil, pp_chp, stor]
 renew_sources = [pv, wind_on]
 sinks = [demand_th, demand_el]
 
 components = transformers + renew_sources + sinks
 entities = components + buses
 
+logging.info('Create simulation object')
+# first standard solving
 simulation = es.Simulation(
     solver='glpk', timesteps=timesteps, stream_solver_output=True,
     objective_options={'function': predefined_objectives.minimize_cost})
 energysystem = es.EnergySystem(entities=entities, simulation=simulation)
 
-om = OptimizationModel(energysystem=energysystem)
+if False:
+    logging.info('Create optimization model')
+    om_validation = OptimizationModel(energysystem=energysystem)
+    om_validation.solve(solver='gurobi', debug=False, tee=True, duals=True)
+    results_validation = om_validation.results()
 
-om.solve(solver='gurobi', debug=True, tee=True, duals=True)
-results = om.results()
-components = transformers + renew_sources
+    # visualization
+    time_index = pd.date_range('1/1/2012', periods=len(timesteps), freq='H')
+    es_df = tpd.EnergySystemDataFrame(result_object=results_validation,
+                                      time_slice=time_index)
 
+    es_df.plot_bus('b_el', bus_type='el', type='input', kind='bar',
+                   df_plot_kwargs={'width':1, 'lw':0, 'stacked':True})
 
-if __name__ == "__main__":
-    def plot_dispatch(bus_to_plot):
-        # plotting: later as multiple pdf with pie-charts and topology?
-        import numpy as np
-        import matplotlib as mpl
-        import matplotlib.cm as cm
+if True:
+    logging.info('Using rolling optimization')
+    simulation.rolling = True
+    from oemof.solph import rolling_optimization as roll_opt
+    results = roll_opt.solve_rolling(energysystem, 24, 10)
 
-        plot_data = renew_sources+transformers
-
-        # data preparation
-        x = np.arange(len(timesteps))
-        y = []
-        labels = []
-        for c in plot_data:
-            y.append(results[c][bus_to_plot])
-            labels.append(c.uid)
-
-        # plotting
-        fig, ax = plt.subplots()
-        sp = ax.stackplot(x, y,
-                          colors=cm.rainbow(np.linspace(0, 1, len(plot_data))))
-        proxy = [mpl.patches.Rectangle(
-            (0, 0), 0, 0, facecolor=pol.get_facecolor()[0]) for pol in sp]
-        ax.legend(proxy, labels)
-        ax.grid()
-        ax.set_xlabel('Timesteps in h')
-        ax.set_ylabel('Power in MW')
-        ax.set_title('Dispatch')
-
-    plot_dispatch(b_el)
-    plt.show()
+    # compare dual variables of rolling and standard optimization
+    df = pd.DataFrame({'duals_rolling': results[b_el][b_el]})
+    df.plot(drawstyle='steps', ylim=(0, 60))
