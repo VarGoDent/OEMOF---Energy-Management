@@ -32,15 +32,6 @@ class CustomizedSimple(Simple):
         self.min_loading = self.min_load / 100 * self.out_max
         #self.power
 
-        ## calculate minimal
-        #self.in_min = [self.out_min[0] / self.eta_min[0]]
-        #self.in_max = [self.out_max[0] / self.eta[0]]
-
-        #A = np.array([[1, self.out_min[0]],
-                      #[1, self.out_max[0]]])
-        #b = np.array([self.in_min[0], self.in_max[0]])
-        #self.coeff = np.linalg.solve(A, b)
-
     def power_generation(self, residual_load, **kwargs):
         power_output = np.maximum(self.min_loading, residual_load)
         power_surplus = power_output - residual_load
@@ -76,14 +67,12 @@ class CustomizedStorage(Storage):
         self.capex_po = kwargs.get('capex_po', 0)
         self.capex_ca = kwargs.get('capex_ca', 0)
         self.dod_max = kwargs.get('dod_max', 0.80)
-        # parent class component holds lifetime
 
         self.__current_soc = self.cap_initial
 
         self.__power_ch = power * self.eta_in
         self.__power_dch = power * self.eta_out
         self.__capacity = capacity
-        self.__current_soc = self.cap_initial
 
     def maximum_output(self, t=None, year=None):
         return self.maximum_discharge()
@@ -108,7 +97,3 @@ class CustomizedStorage(Storage):
         self.__current_soc = (self.__current_soc + power_ch /
             self.__capacity / self.eta_in)
         return power_ch, self.__current_soc
-
-    #def self_discharge(self):
-        #self.__current_soc = np.maximum(0, self.__current_soc *
-            #(1 - self.__self_dch))
