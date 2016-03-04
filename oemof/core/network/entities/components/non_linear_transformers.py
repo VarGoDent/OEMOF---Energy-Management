@@ -29,11 +29,15 @@ class CustomizedSimple(Simple):
         self.min_load = kwargs.get('min_load', 0.1)
 
         self.eta_total = sum(self.eta)
-        self.min_loading = self.min_load / 100 * self.out_max
+        self.min_loading = np.array(self.min_load / 100 * self.out_max)
         #self.power
 
     def power_generation(self, residual_load, **kwargs):
-        power_output = np.maximum(self.min_loading, residual_load)
+        #power_output = np.maximum(self.min_loading, residual_load)
+        power_output = max(self.min_loading, residual_load)
+        if residual_load == 0:
+            power_output = 0
+        # if rm_residual >0, power_out = rm_residual
         power_surplus = power_output - residual_load
         return power_output, power_surplus
 
@@ -43,7 +47,7 @@ class CustomizedSimple(Simple):
         base_load = power_flow - peak_load
         fuel_volume = (base_load / self.eta_min * 100 + peak_load /
                        self.eta * 100)
-        fuel_costs = fuel_volume.sum() * self._economics.fuel_costs()  # economics
+        fuel_costs = fuel_volume.sum() * self._economics.fuel_costs()
         return fuel_costs, fuel_volume
 
     def maximum_output(self, t=None, year=None):
@@ -70,30 +74,47 @@ class CustomizedStorage(Storage):
 
         self.__current_soc = self.cap_initial
 
-        self.__power_ch = power * self.eta_in
-        self.__power_dch = power * self.eta_out
+        self.__power_ch = power / self.eta_in
+        self.__power_dch = power
         self.__capacity = capacity
 
-    def maximum_output(self, t=None, year=None):
-        return self.maximum_discharge()
+    def maximum_output(self, t=None):
+        return self.maximum_discharge_el()
 
-    def maximum_discharge(self):
-        return np.maximum(0, np.minimum(self.__power_dch,
-            (self.__current_soc - (1 - self.dod_max)) *
-            self.__capacity) * self.eta_out)
+    #def maximum_discharge(self):
+        #return np.maximum(0, np.minimum(self.__power_dch,
+            #(self.__current_soc - (1 - self.dod_max)) *
+            #self.__capacity) * self.eta_out)
 
-    def maximum_charge(self):
-        return np.minimum(self.__power_ch, (1 - self.__current_soc) *
-            self.__capacity / self.eta_in)
+    def maximum_discharge_el(self):
+        return max(0, min(self.__power_dch, (
+            self.__current_soc - 1 + self.dod_max) * (
+                self.__capacity * self.eta_out)))
+
+    #def maximum_charge(self):
+        #return np.minimum(self.__power_ch, (1 - self.__current_soc) *
+            #self.__capacity / self.eta_in)
+
+    def maximum_charge_el(self):
+        return min(self.__power_ch,
+                  (1 - self.__current_soc) * self.__capacity / self.eta_in)
 
     def discharge(self, residual_load):
-        power_dch = np.minimum(residual_load, self.maximum_discharge())
+        power_dch = min(residual_load, self.maximum_discharge_el())
+        #power_dch = np.minimum(residual_load, self.maximum_discharge())
         self.__current_soc = (self.__current_soc - power_dch /
             self.__capacity / self.eta_out)
         return power_dch, self.__current_soc
 
     def charge(self, residual_load):
-        power_ch = np.minimum(residual_load, self.maximum_charge())
-        self.__current_soc = (self.__current_soc + power_ch /
-            self.__capacity / self.eta_in)
+        #power_ch = np.minimum(residual_load, self.maximum_charge())
+        power_ch = min(residual_load, self.maximum_charge_el())
+        energy_ch = min((self.__power_ch * self.eta_in), (1 - (
+            self.__current_soc)) * self.__capacity)  # battery in
+        #self.__current_soc = (self.__current_soc + power_ch /
+            #self.__capacity * self.eta_in)
+        self.__current_soc = (self.__current_soc + energy_ch /
+            self.__capacity * self.eta_in)
+        # in current_soc the time-changing variable of power has to be assigned
+        # (named energy)
         return power_ch, self.__current_soc
