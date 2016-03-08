@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from .transformers import Storage
 from .transformers import Simple
-import logging
 import numpy as np
+from scipy.interpolate import interp1d
 
 
 class CustomizedSimple(Simple):
@@ -30,23 +30,57 @@ class CustomizedSimple(Simple):
 
         self.eta_total = self.eta
         self.min_loading = self.min_load * self.out_max
-        #self.power
 
     def power_generation(self, residual_load, **kwargs):
-        power_output = np.maximum(self.min_loading, residual_load)
-        #if residual_load == 0:
-            #power_output = 0
-        # if rm_residual >0, power_out = rm_residual
-        power_surplus = power_output - residual_load
+        """
+        Define power generation value of generator while considering the
+        case that the generator can be switched off (power = 0).
+        """
+        power_output = 0.0
+        power_surplus = 0.0
+        if residual_load == 0:
+            power_output = 0.0
+            power_surplus = 0.0
+        else:
+            power_output = np.maximum(self.min_loading, residual_load)
+            power_surplus = power_output - residual_load
+
         return power_output, power_surplus
 
-    def fuel_costs_and_volume_py(self, power_flow, **kwargs):
-        peak_load = np.diff(np.concatenate((np.array([0]), power_flow)))
-        peak_load = peak_load.clip(min=0, max=None)
-        base_load = power_flow - peak_load
-        fuel_volume = (base_load / self.eta_min * 100 + peak_load /
-                       self.eta * 100)
-        fuel_costs = fuel_volume.sum() * self._economics.fuel_costs()
+    def fuel_and_volume(self, power_flow, diesel_price, **kwargs):
+        """
+        Calculate fuel costs and fuel volume according to power flow
+        and technical and financial input parameters.
+
+        Parameters
+        ----------
+        power_flow : pd.DataFrame or pd.Series
+            holds results of the power flow loop for the generator
+        diesel_price: float
+            price of diesel at specific location
+        """
+        eff = np.array([0, self.eta_min, self.eta_total])
+        load = np.array([0, self.out_max * self.eta_min, self.out_max])
+        interp = interp1d(load, eff)
+        load_values = np.linspace(0, 100, num=100)
+        # linear interpolation, should change for higher accuracy
+        eff_curve = interp(load_values)
+
+        #TODO
+        # compare with Matlab simulation and complete calculations
+        fuel_volume = 0
+        fuel_costs = 0
+
+        #try:
+            #fuel_volume = power_flow / eff_curve[power_flow] * 100
+        #except KeyError:
+            #if eff_curve[power_flow] <= 0:
+                #fuel_volume = 0.0
+            #else:
+                #raise ValueError('Value is not in efficiancy curve.')
+        ## crosscheck (from Matlab file)
+        #fuel_costs = fuel_volume.sum() * diesel_price / 10
+
         return fuel_costs, fuel_volume
 
     def maximum_output(self, t=None, year=None):
@@ -67,8 +101,9 @@ class CustomizedStorage(Storage):
         super().__init__(**kwargs)
 
         self.capacity = kwargs.get('capacity', 0)
+        self.crate = kwargs.get('c_rate_in', 1)
         self.power = kwargs.get('power', 0)
-        self.power = self.power * self.capacity  # kW
+        self.power = self.capacity * self.crate  # kW
 
         self.cycle_no = kwargs.get('cycle_no', 2000)
         self.capex_po = kwargs.get('capex_po', 0)
@@ -95,29 +130,24 @@ class CustomizedStorage(Storage):
 
     def discharge(self, residual_load):
         power_dch = np.minimum(residual_load, self.maximum_discharge_el())
-        print('power_dch dcharge: ' + str(power_dch))
-        print('current_soc dcharge: ' + str(self.__current_soc))
-        print('capacity dcharge: ' + str(self.__capacity))
-        print('eta_out dcharge: ' + str(self.eta_out))
-        self.__current_soc = (self.__current_soc - power_dch /
-            self.__capacity / self.eta_out)
-        print('current_soc dcharge: ' + str(self.__current_soc))
+        energy_dch = np.minimum((power_dch / self.eta_out), (
+            self.__current_soc - 1 + self.dod_max) * self.__capacity)
+
+        # in current_soc the time-changing variable of power is assigned
+        # (named energy)
+        self.__current_soc = (self.__current_soc - energy_dch /
+            self.__capacity)
+
         return power_dch, self.__current_soc
 
     def charge(self, residual_load):
         power_ch = np.minimum(residual_load, self.maximum_charge_el())
-        print('power_ch charge: ' + str(power_ch))
-        print('current_soc charge: ' + str(self.__current_soc))
-        print('capacity charge: ' + str(self.__capacity))
-        print('eta_out charge: ' + str(self.eta_out))
-        ## wrong: energy_ch = (self.__power_ch * self.eta_in)
-        #energy_ch = np.minimum((self.__power_ch * self.eta_in), (1 - (
-            #self.__current_soc)) * self.__capacity)  # battery in
+        energy_ch = np.minimum((power_ch * self.eta_in), (1 - (
+            self.__current_soc)) * self.__capacity)
 
-        #self.__current_soc = (self.__current_soc + energy_ch /
-            #self.__capacity)
-        self.__current_soc = (self.__current_soc + power_ch /
-            self.__capacity * self.eta_in)
-        # in current_soc the time-changing variable of power has to be assigned
+        # in current_soc the time-changing variable of power is assigned
         # (named energy)
+        self.__current_soc = (self.__current_soc + energy_ch /
+            self.__capacity)
+
         return power_ch, self.__current_soc
