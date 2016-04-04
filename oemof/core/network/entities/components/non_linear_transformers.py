@@ -4,6 +4,8 @@ from .transformers import Simple
 import numpy as np
 from scipy.interpolate import interp1d
 
+HEAT_VALUE = 10.6
+
 
 class CustomizedSimple(Simple):
     """
@@ -60,28 +62,23 @@ class CustomizedSimple(Simple):
             price of diesel at specific location
         """
         eff = np.array([0, self.eta_min, self.eta_total])
-        load = np.array([0, self.out_max * self.eta_min, self.out_max])
+        load = np.array([0, self.out_max * self.eta_min / 100, self.out_max])
         interp = interp1d(load, eff)
-        load_values = np.linspace(0, 100, num=100)
-        # linear interpolation, should change for higher accuracy
-        eff_curve = interp(load_values)
 
-        #TODO
-        # compare with Matlab simulation and complete calculations
-        fuel_volume = 0
-        fuel_costs = 0
+        # Show efficiency curve:
+        # load_values = np.linspace(0, self.out_max, num=100)
+        # eff_curve = interp(load_values)
+        # from matplotlib import pyplot
+        # pyplot.plot(eff_curve)
+        # pyplot.show()
 
-        #try:
-            #fuel_volume = power_flow / eff_curve[power_flow] * 100
-        #except KeyError:
-            #if eff_curve[power_flow] <= 0:
-                #fuel_volume = 0.0
-            #else:
-                #raise ValueError('Value is not in efficiancy curve.')
-        ## crosscheck (from Matlab file)
-        #fuel_costs = fuel_volume.sum() * diesel_price / 10
+        effOutput = interp(power_flow)
+        energyThermic = power_flow[effOutput > 0].div(
+            effOutput[effOutput > 0] / 100).sum()
+        fuelVolume = energyThermic / HEAT_VALUE
+        fuelCosts = fuelVolume * diesel_price
 
-        return fuel_costs, fuel_volume
+        return fuelCosts, fuelVolume
 
     def maximum_output(self, t=None, year=None):
         return self.power
