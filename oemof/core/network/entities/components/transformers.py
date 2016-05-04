@@ -146,12 +146,17 @@ class Storage(Transformer):
     Parameters
     ----------
     cap_max : float
-        absolut maximum state of charge if invest=FALSE,
-        absolut maximum state of charge of built capacity if invest=TRUE
+        absolute maximum state of charge if invest=FALSE,
+        absolute maximum state of charge of existing capacity if invest=TRUE
     cap_min : float
-        absolut minimum state of charge
+        absolute minimum state of charge if invest=FALSE,
+        absolute minimum state of charge of existing capacity if invest=TRUE
     cap_initial : float, optional
-        The state of charge (soc) at timestep 0.
+        The absolute state of charge (soc) at timestep 0.
+    soc_max : percental value between 0 and 1
+        relative maximum state of charge if invest=TRUE
+    soc_min : percental value between 0 and 1
+        relative minimum state of charge if invest=TRUE
     add_cap_limit : float
         limit of additional installed capacity (only investment models)
     eta_in : float
@@ -173,8 +178,10 @@ class Storage(Transformer):
 
         self.cap_max = kwargs.get('cap_max', 0)
         self.cap_min = kwargs.get('cap_min', None)
-        self.add_cap_limit = kwargs.get('add_cap_limit', None)
+        self.soc_max = kwargs.get('soc_max', 1)
+        self.soc_min = kwargs.get('soc_min', 0)
         self.cap_initial = kwargs.get('cap_initial', None)
+        self.add_cap_limit = kwargs.get('add_cap_limit', None)
         self.eta_in = kwargs.get('eta_in', 1)
         self.eta_out = kwargs.get('eta_out', 1)
         self.cap_loss = kwargs.get('cap_loss', 0)
