@@ -249,10 +249,14 @@ def set_storage_cap_bounds(model, block):
             if hasattr(cap_max[e], "__len__"):
                 for t in model.timesteps:
                     block.cap[e, t].setub(cap_max[e][t])
-                    block.cap[e, t].setlb(cap_min[e])
             else:
                 for t in model.timesteps:
                     block.cap[e, t].setub(cap_max[e])
+            if hasattr(cap_min[e], "__len__"):
+                for t in model.timesteps:
+                    block.cap[e, t].setlb(cap_min[e][t])
+            else:
+                for t in model.timesteps:
                     block.cap[e, t].setlb(cap_min[e])
     else:
         # set maximum of additional storage capacity
