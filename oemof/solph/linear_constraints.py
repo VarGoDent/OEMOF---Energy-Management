@@ -707,8 +707,12 @@ def add_storage_charge_discharge_limits(model, block):
     def storage_discharge_limit_rule(block, e, t):
         expr = 0
         expr += model.w[e, model.O[e][0], t]
-        expr += -(cap_max[e] + block.add_cap[e]) \
-            * c_rate_out[e]
+        if hasattr(cap_max[e], "__len__"):
+            expr += -(cap_max[e][t] + block.add_cap[e]) \
+                * c_rate_out[e]
+        else:
+            expr += -(cap_max[e] + block.add_cap[e]) \
+                * c_rate_out[e]
         return(expr <= 0)
     block.discharge_limit_invest = po.Constraint(block.uids,
                                                  model.timesteps,
@@ -718,8 +722,12 @@ def add_storage_charge_discharge_limits(model, block):
     def storage_charge_limit_rule(block, e, t):
         expr = 0
         expr += model.w[e, model.I[e][0], t]
-        expr += -(cap_max[e] + block.add_cap[e]) \
-            * c_rate_in[e]
+        if hasattr(cap_max[e], "__len__"):
+            expr += -(cap_max[e][t] + block.add_cap[e]) \
+                * c_rate_in[e]
+        else:
+            expr += -(cap_max[e] + block.add_cap[e]) \
+                * c_rate_in[e]
         return(expr <= 0)
     block.charge_limit_invest = po.Constraint(block.uids,
                                               model.timesteps,

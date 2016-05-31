@@ -119,6 +119,9 @@ def add_opex_fix(model, block, ref=None):
                         for e in uids_inv)
         elif ref == 'capacity':
             cap_max = {obj.uid: obj.cap_max for obj in block.objs}
+            for obj in block.objs:
+                if hasattr(cap_max[obj.uid], "__len__"):
+                    cap_max[obj.uid] = max(cap_max[obj.uid])
             expr = 0
             expr += sum(cap_max[e] * opex_fix[e] for e in uids)
             expr += sum((cap_max[e] + block.add_cap[e]) * opex_fix[e]
