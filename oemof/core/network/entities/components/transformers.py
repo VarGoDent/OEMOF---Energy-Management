@@ -173,14 +173,38 @@ class Storage(Transformer):
         self.c_rate_out = kwargs.get('c_rate_out', None)
 
         if not self.optimization_options.get('investment'):
-            if self.cap_max == 0:
-                logging.info('Storage cap_max set to default value of 0')
-            if self.out_max is None:
-                try:
-                    self.out_max = [self.c_rate_out * self.cap_max]
-                except:
-                    raise ValueError('Failed to set out_max automatically.' +
-                                     'Did you specify c_rate_out and cap_max?')
+            if not hasattr(self.cap_max, "__len__"):
+                if self.cap_max == 0:
+                    logging.info('Storage cap_max set to default value of 0')
+                if self.out_max is None:
+                    try:
+                        self.out_max = [self.c_rate_out * self.cap_max]
+                    except:
+                        raise ValueError(
+                            'Failed to set out_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+                if self.in_max is None:
+                    try:
+                        self.in_max = [self.c_rate_in * self.cap_max]
+                    except:
+                        raise ValueError(
+                            'Failed to set in_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+            else:
+                if self.out_max is None:
+                    try:
+                        self.out_max = [self.c_rate_out * max(self.cap_max)]
+                    except:
+                        raise ValueError(
+                            'Failed to set out_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+                if self.in_max is None:
+                    try:
+                        self.in_max = [self.c_rate_in * max(self.cap_max)]
+                    except:
+                        raise ValueError(
+                            'Failed to set in_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
             if self.in_max is None:
                 try:
                     self.in_max = [self.c_rate_in * self.cap_max]
