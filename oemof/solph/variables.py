@@ -273,6 +273,15 @@ def set_storage_cap_bounds(model, block):
             else:
                 rhs = cap_max[e] + block.add_cap[e]
             return(lhs <= rhs)
+
+        # set lower bound
+        if hasattr(cap_min[e], "__len__"):
+            for t in model.timesteps:
+                block.cap[e, t].setlb(cap_min[e][t])
+        else:
+            for t in model.timesteps:
+                block.cap[e, t].setlb(cap_min[e])
+
         block.cap_bound = po.Constraint(block.indexset,
                                         rule=add_cap_rule)
 
