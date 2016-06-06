@@ -268,7 +268,10 @@ def set_storage_cap_bounds(model, block):
         # constraint for additional capacity in investment models
         def add_cap_rule(block, e, t):
             lhs = block.cap[e, t]
-            rhs = cap_max[e] + block.add_cap[e]
+            if hasattr(cap_max, "__len__"):
+                rhs = cap_max[e][t] + block.add_cap[e]
+            else:
+                rhs = cap_max[e] + block.add_cap[e]
             return(lhs <= rhs)
         block.cap_bound = po.Constraint(block.indexset,
                                         rule=add_cap_rule)
