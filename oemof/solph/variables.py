@@ -140,7 +140,6 @@ def set_bounds(model, block, side='output'):
                 out_max[e.uid] = dict(zip(output_uids, e.out_max))
         if side == 'input':
             input_uids = [i.uid for i in e.inputs[:]]
-            print(e.ub_in)
             if e.ub_in:
                 ub_in[e.uid] = dict(zip(input_uids, e.ub_in))
                 in_max[e.uid] = dict(zip(input_uids, e.in_max))
