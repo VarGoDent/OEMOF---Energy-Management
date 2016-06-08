@@ -217,3 +217,90 @@ class Storage(Transformer):
                 raise ValueError('Missing value for c_rate_in!')
             if self.c_rate_out is None:
                 raise ValueError('Missing value for c_rate_out!')
+
+
+class StorageMobi(Transformer):
+    """
+    Parameters
+    ----------
+    cap_max : float
+        absolut maximum state of charge if invest=FALSE,
+        absolut maximum state of charge of built capacity if invest=TRUE
+    cap_min : float
+        absolut minimum state of charge
+    cap_initial : float, optional
+        The state of charge (soc) at timestep 0.
+    add_cap_limit : float
+        limit of additional installed capacity (only investment models)
+    eta_in : float
+        efficiency at charging
+    eta_out : float
+        efficiency at discharging
+    cap_loss : float or list/pandas.Series with length of simulation timesteps
+        capacity loss per timestep in p/100
+    c_rate_in : float
+        c-rate for charging (unit is s^-1)
+    c_rate_out : float
+        c-rate for discharging (unit is s^-1)
+    """
+    optimization_options = {}
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+        self.cap_max = kwargs.get('cap_max', 0)
+        self.cap_min = kwargs.get('cap_min', None)
+        self.add_cap_limit = kwargs.get('add_cap_limit', None)
+        self.cap_initial = kwargs.get('cap_initial', None)
+        self.eta_in = kwargs.get('eta_in', 1)
+        self.eta_out = kwargs.get('eta_out', 1)
+        self.cap_loss = kwargs.get('cap_loss', 0)
+        self.c_rate_in = kwargs.get('c_rate_in', None)
+        self.c_rate_out = kwargs.get('c_rate_out', None)
+
+        if not self.optimization_options.get('investment'):
+            if not hasattr(self.cap_max, "__len__"):
+                if self.cap_max == 0:
+                    logging.info('Storage cap_max set to default value of 0')
+                if self.out_max is None:
+                    try:
+                        self.out_max = [self.c_rate_out * self.cap_max]
+                    except:
+                        raise ValueError(
+                            'Failed to set out_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+                if self.in_max is None:
+                    try:
+                        self.in_max = [self.c_rate_in * self.cap_max]
+                    except:
+                        raise ValueError(
+                            'Failed to set in_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+            else:
+                if self.out_max is None:
+                    try:
+                        self.out_max = [self.c_rate_out * max(self.cap_max)]
+                    except:
+                        raise ValueError(
+                            'Failed to set out_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+                if self.in_max is None:
+                    try:
+                        self.in_max = [self.c_rate_in * max(self.cap_max)]
+                    except:
+                        raise ValueError(
+                            'Failed to set in_max automatically.' +
+                            'Did you specify c_rate_out and cap_max?')
+            if self.in_max is None:
+                try:
+                    self.in_max = [self.c_rate_in * self.cap_max]
+                except:
+                    raise ValueError('Failed to set in_max automatically.' +
+                                     'Did you specify c_rate_out and cap_max?')
+
+        if self.optimization_options.get('investment'):
+            if self.c_rate_in is None:
+                raise ValueError('Missing value for c_rate_in!')
+            if self.c_rate_out is None:
+                raise ValueError('Missing value for c_rate_out!')

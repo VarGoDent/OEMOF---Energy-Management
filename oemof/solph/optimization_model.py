@@ -280,6 +280,13 @@ class OptimizationModel(po.ConcreteModel):
                         self, str(transformer.Storage)
                         ).cap[entity.uid, t].value
                     for t in self.timesteps]
+            if isinstance(entity, cp.transformers.StorageMobi):
+                result[entity] = result.get(entity, UD())
+                result[entity][entity] = [
+                    getattr(
+                        self, str(transformer.StorageMobi)
+                        ).cap[entity.uid, t].value
+                    for t in self.timesteps]
 
             block = getattr(self, str(type(entity)))
 
@@ -728,6 +735,42 @@ def _(e, om, block):
 
 
 @assembler.register(transformer.Storage)
+def _(e, om, block):
+    """Simple storage assembler containing the constraints for simple
+    storage components.
+
+      Parameters
+    ----------
+    See :func:`assembler`.
+
+    Returns
+    -------
+    See :func:`assembler`.
+    """
+    # add capacity variable
+    block.cap = po.Var(block.uids, om.timesteps,
+                       within=po.NonNegativeReals)
+
+    def linear_constraints(om, block):
+        lc.add_storage_balance(om, block)
+        var.set_storage_cap_bounds(om, block)
+        if not block.optimization_options.get("investment", False):
+            var.set_bounds(om, block, side="output")
+            var.set_bounds(om, block, side="input")
+        else:
+            lc.add_storage_charge_discharge_limits(om, block)
+
+    block.default_optimization_options = {
+        "linear_constr": linear_constraints}
+
+    if block.optimization_options.get("investment", False):
+        block.add_cap = po.Var(block.uids, within=po.NonNegativeReals)
+
+    om.default_assembler(block)
+    return(om)
+
+
+@assembler.register(transformer.StorageMobi)
 def _(e, om, block):
     """Simple storage assembler containing the constraints for simple
     storage components.

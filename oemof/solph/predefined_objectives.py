@@ -47,6 +47,7 @@ def minimize_cost(self, cost_objects=None, revenue_objects=None):
                     str(transformer.VariableEfficiencyCHP),
                     str(transformer.SimpleExtractionCHP),
                     str(transformer.Storage),
+                    str(transformer.StorageMobi),
                     str(transformer.CHP),
                     str(source.FixedSource),
                     str(source.Commodity)]
