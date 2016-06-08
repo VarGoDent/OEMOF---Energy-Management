@@ -116,6 +116,7 @@ def set_bounds(model, block, side='output'):
     ub_in = {}
     ub_out = {}
     out_max = {}
+    in_max = {}
     exist_ub_out = False
     for e in block.objs:
         if side == 'output':
@@ -137,11 +138,22 @@ def set_bounds(model, block, side='output'):
                     output_uids,
                     [[x] * len(model.timesteps) for x in e.out_max]))
                 out_max[e.uid] = dict(zip(output_uids, e.out_max))
-        if side == 'input' and e.in_max is not None:
+        if side == 'input':
             input_uids = [i.uid for i in e.inputs[:]]
-            ub_in[e.uid] = dict(zip(
-                input_uids,
-                [[x] * len(model.timesteps) for x in e.in_max]))
+            print(e.ub_in)
+            if e.ub_in:
+                ub_in[e.uid] = dict(zip(input_uids, e.ub_in))
+                in_max[e.uid] = dict(zip(input_uids, e.in_max))
+                if e.in_max < np.array(e.ub_in).max():
+                    logging.error('The maximal value of ub_out should not be' +
+                                  ' greater than out_max ({}).'.format(e.uid))
+                exist_ub_in = True
+            # ** Constant bound
+            else:
+                ub_in[e.uid] = dict(zip(
+                    input_uids,
+                    [[x] * len(model.timesteps) for x in e.in_max]))
+                in_max[e.uid] = dict(zip(input_uids, e.in_max))
 
     # *** No investment - set upper bound to maximal output***
     if not block.optimization_options.get('investment', False):
