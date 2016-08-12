@@ -95,80 +95,39 @@ plt.show()
 
 # %% dispatch plot (balance doesn't fit since DE/LU/AT are one bidding area)
 
-# country code
-cc = 'DE'
-
-# get fossil and renewable power plants
-fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
-         'shortage']
-
-dispatch = pd.DataFrame()
-
-for f in fuels:
-    cols = [c for c in df_raw.columns if f in c and cc in c]
-    dispatch[f] = df_raw[cols].sum(axis=1)
-
-dispatch.index = df_raw.index
-
-# get imports and exports and aggregate columns
-cols = [c for c in df_raw.columns if 'powerline' in c and cc in c]
-powerlines = df_raw[cols]
-
-exports = powerlines[[c for c in powerlines.columns
-                      if c.startswith(cc + '_')]]
-
-imports = powerlines[[c for c in powerlines.columns
-                      if '_' + cc + '_' in c]]
-
-dispatch['imports'] = imports.sum(axis=1)
-dispatch['exports'] = exports.sum(axis=1)
-
-# get imports and exports and aggregate columns
-phs_in = df_raw[[c for c in df_raw.columns if 'phs_in' in c and cc in c]]
-phs_out = df_raw[[c for c in df_raw.columns if 'phs_out' in c and cc in c]]
-phs_level = df_raw[[c for c in df_raw.columns if 'phs_level' in c and cc in c]]
-
-dispatch['phs_in'] = phs_in.sum(axis=1)
-dispatch['phs_out'] = phs_out.sum(axis=1)
-dispatch['phs_level'] = phs_level.sum(axis=1)
-
-# MW to GW
-dispatch = dispatch.divide(1000)
-
-# translation
-dispatch_de = dispatch[
-    ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-     'hard_coal', 'gas', 'oil', 'mixed_fuels', 'phs_out', 'load', 'imports',
-     'exports']]
-
-# dict with new column names
-en_de = {'run_of_river': 'Laufwasser',
-         'biomass': 'Biomasse',
-         'solar': 'Solar',
-         'wind': 'Wind',
-         'uranium': 'Kernenergie',
-         'lignite': 'Braunkohle',
-         'hard_coal': 'Steinkohle',
-         'gas': 'Gas',
-         'mixed_fuels': 'Sonstiges',
-         'oil': 'Öl',
-         'phs_out': 'Pumpspeicher',
-         'imports': 'Import',
-         'exports': 'Export',
-         'load': 'Last'}
-dispatch_de = dispatch_de.rename(columns=en_de)
-
-# area plot. gute woche: '2014-01-21':'2014-01-27'
-dispatch_de[['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
-             'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
-             'Pumpspeicher', 'Import']][0:24*7] \
-             .plot(kind='area', stacked=True, linewidth=0, legend='reverse',
-                   cmap=cm.get_cmap('Spectral'))
-plt.xlabel('Datum')
-plt.ylabel('Leistung in  GW')
-plt.ylim(0, max(dispatch_de.sum(axis=1)) * 0.65)
-plt.show()
+## translation
+#dispatch_de = dispatch[
+#    ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+#     'hard_coal', 'gas', 'oil', 'mixed_fuels', 'phs_out', 'load', 'imports',
+#     'exports']]
+#
+## dict with new column names
+#en_de = {'run_of_river': 'Laufwasser',
+#         'biomass': 'Biomasse',
+#         'solar': 'Solar',
+#         'wind': 'Wind',
+#         'uranium': 'Kernenergie',
+#         'lignite': 'Braunkohle',
+#         'hard_coal': 'Steinkohle',
+#         'gas': 'Gas',
+#         'mixed_fuels': 'Sonstiges',
+#         'oil': 'Öl',
+#         'phs_out': 'Pumpspeicher',
+#         'imports': 'Import',
+#         'exports': 'Export',
+#         'load': 'Last'}
+#dispatch_de = dispatch_de.rename(columns=en_de)
+#
+## area plot. gute woche: '2014-01-21':'2014-01-27'
+#dispatch_de[['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
+#             'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
+#             'Pumpspeicher', 'Import']][0:24*7] \
+#             .plot(kind='area', stacked=True, linewidth=0, legend='reverse',
+#                   cmap=cm.get_cmap('Spectral'))
+#plt.xlabel('Datum')
+#plt.ylabel('Leistung in  GW')
+#plt.ylim(0, max(dispatch_de.sum(axis=1)) * 0.65)
+#plt.show()
 
 
 # %% duration curves for power plants
@@ -475,17 +434,14 @@ for k, v in files.items():
                                         for substring in cc)]
     powerlines = df[cols]
     exports = powerlines[[c for c in powerlines.columns
-                          if
-                          any(c.startswith(substring + '_')
-                              for substring in cc)]]
+                          if c.startswith('DE_')]]
     imports = powerlines[[c for c in powerlines.columns
-                          if any('_' + substring + '_' in c
-                                 for substring in cc)]]
+                          if ('_' + 'DE' + '_' in c)]]
     df_tmp['imports'] = imports.sum(axis=1)
     df_tmp['exports'] = exports.sum(axis=1)
 
-    # get imports and exports and aggregate columns
-    phs_in = df[[c for c in df.columns if 'phs_in' and
+    # get phs in- and outputs
+    phs_in = df[[c for c in df.columns if 'phs_in' in c and
                 any(substring in c for substring in cc)]]
     phs_out = df[[c for c in df.columns if 'phs_out' in c and
                  any(substring in c for substring in cc)]]
@@ -506,21 +462,23 @@ for k, v in files.items():
     # append row
     df_dispatch = df_dispatch.append(df_tmp)
 
-    print(k, df_tmp['load'].values)
-
 # sort by row index
 df_dispatch.sort_index(inplace=True)
 
 df_dispatch.sum(axis=1)
 
 # plot
-df_dispatch[['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-             'hard_coal', 'gas', 'mixed_fuels', 'oil', 'imports', 'phs_out',
-             'shortage']] \
+df_dispatch['load'] = df_dispatch['load'].multiply(-1)
+df_dispatch['phs_in'] = df_dispatch['phs_in'].multiply(-1)
+df_dispatch['exports'] = df_dispatch['exports'].multiply(-1)
+df_dispatch['excess'] = df_dispatch['excess'].multiply(-1)
+df_dispatch[['load', 'phs_out', 'phs_in', 'run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+             'hard_coal', 'gas', 'mixed_fuels', 'oil', 'imports', 'exports',
+             'shortage', 'excess']] \
              .plot(kind='bar', stacked=True, legend='reverse',
                    cmap=cm.get_cmap('Spectral'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
-plt.legend(loc='upper center', ncol=12)
-plt.tight_layout()
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+#plt.tight_layout()
 plt.show()
