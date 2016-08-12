@@ -457,34 +457,40 @@ for k, v in files.items():
     df_tmp = pd.DataFrame()
 
     # country code
-    cc = 'DE'
+    cc = ['DE', 'LU', 'AT']
 
     # get fossil and renewable power plants
     fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
              'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
              'shortage']
     for f in fuels:
-        cols = [c for c in df.columns if f in c and cc in c]
+        cols = [c for c in df.columns
+                if f in c and any(substring in c
+                                  for substring in cc)]
         df_tmp[f] = df[cols].sum(axis=1)
 
     # get imports and exports and aggregate columns
-    cols = [c for c in df.columns if 'powerline' in c and cc in c]
+    cols = [c for c in df.columns
+            if 'powerline' in c and any(substring in c
+                                        for substring in cc)]
     powerlines = df[cols]
-
     exports = powerlines[[c for c in powerlines.columns
-                          if c.startswith(cc + '_')]]
-
+                          if
+                          any(c.startswith(substring + '_')
+                              for substring in cc)]]
     imports = powerlines[[c for c in powerlines.columns
-                          if '_' + cc + '_' in c]]
-
+                          if any('_' + substring + '_' in c
+                                 for substring in cc)]]
     df_tmp['imports'] = imports.sum(axis=1)
     df_tmp['exports'] = exports.sum(axis=1)
 
     # get imports and exports and aggregate columns
-    phs_in = df[[c for c in df.columns if 'phs_in' in c and cc in c]]
-    phs_out = df[[c for c in df.columns if 'phs_out' in c and cc in c]]
-    phs_level = df[[c for c in df.columns if 'phs_level' in c and cc in c]]
-
+    phs_in = df[[c for c in df.columns if 'phs_in' and
+                any(substring in c for substring in cc)]]
+    phs_out = df[[c for c in df.columns if 'phs_out' in c and
+                 any(substring in c for substring in cc)]]
+    phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                    any(substring in c for substring in cc)]]
     df_tmp['phs_in'] = phs_in.sum(axis=1)
     df_tmp['phs_out'] = phs_out.sum(axis=1)
     df_tmp['phs_level'] = phs_level.sum(axis=1)
@@ -500,14 +506,20 @@ for k, v in files.items():
     # append row
     df_dispatch = df_dispatch.append(df_tmp)
 
+    print(k, df_tmp['load'].values)
+
 # sort by row index
 df_dispatch.sort_index(inplace=True)
 
+df_dispatch.sum(axis=1)
+
 # plot
 df_dispatch[['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-             'hard_coal', 'gas', 'mixed_fuels', 'oil', 'imports', 'phs_out']] \
+             'hard_coal', 'gas', 'mixed_fuels', 'oil', 'imports', 'phs_out',
+             'shortage']] \
              .plot(kind='bar', stacked=True, legend='reverse',
                    cmap=cm.get_cmap('Spectral'))
+plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
 plt.legend(loc='upper center', ncol=12)
 plt.tight_layout()
