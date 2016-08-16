@@ -95,65 +95,90 @@ plt.show()
 
 # %% dispatch plot (balance doesn't fit since DE/LU/AT are one bidding area)
 
-## translation
-#dispatch_de = dispatch[
-#    ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-#     'hard_coal', 'gas', 'oil', 'mixed_fuels', 'phs_out', 'load', 'imports',
-#     'exports']]
-#
-## dict with new column names
-#en_de = {'run_of_river': 'Laufwasser',
-#         'biomass': 'Biomasse',
-#         'solar': 'Solar',
-#         'wind': 'Wind',
-#         'uranium': 'Kernenergie',
-#         'lignite': 'Braunkohle',
-#         'hard_coal': 'Steinkohle',
-#         'gas': 'Gas',
-#         'mixed_fuels': 'Sonstiges',
-#         'oil': 'Öl',
-#         'phs_out': 'Pumpspeicher',
-#         'imports': 'Import',
-#         'exports': 'Export',
-#         'load': 'Last'}
-#dispatch_de = dispatch_de.rename(columns=en_de)
-#
-## area plot. gute woche: '2014-01-21':'2014-01-27'
-#dispatch_de[['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
-#             'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
-#             'Pumpspeicher', 'Import']][0:24*7] \
-#             .plot(kind='area', stacked=True, linewidth=0, legend='reverse',
-#                   cmap=cm.get_cmap('Spectral'))
-#plt.xlabel('Datum')
-#plt.ylabel('Leistung in  GW')
-#plt.ylim(0, max(dispatch_de.sum(axis=1)) * 0.65)
-#plt.show()
+file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
 
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_dispatch = pd.DataFrame()
+
+# country code
+cc = ['DE', 'LU', 'AT']
+
+# get fossil and renewable power plants
+fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
+         'shortage']
+for f in fuels:
+    cols = [c for c in df.columns
+            if f in c and any(substring in c
+                              for substring in cc)]
+    df_dispatch[f] = df[cols].sum(axis=1)
+
+# get imports and exports and aggregate columns
+cols = [c for c in df.columns
+        if 'powerline' in c and any(substring in c
+                                    for substring in cc)]
+powerlines = df[cols]
+exports = powerlines[[c for c in powerlines.columns
+                      if c.startswith('DE_')]]
+imports = powerlines[[c for c in powerlines.columns
+                      if ('_' + 'DE' + '_' in c)]]
+df_dispatch['imports'] = imports.sum(axis=1)
+df_dispatch['exports'] = exports.sum(axis=1)
+
+# get phs in- and outputs
+phs_in = df[[c for c in df.columns if 'phs_in' in c and
+            any(substring in c for substring in cc)]]
+phs_out = df[[c for c in df.columns if 'phs_out' in c and
+             any(substring in c for substring in cc)]]
+phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                any(substring in c for substring in cc)]]
+df_dispatch['phs_in'] = phs_in.sum(axis=1)
+df_dispatch['phs_out'] = phs_out.sum(axis=1)
+df_dispatch['phs_level'] = phs_level.sum(axis=1)
+
+# MW to GW
+df_dispatch = df_dispatch.divide(1000)
+
+# dict with new column names
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last'}
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+# area plot. gute woche: '2014-01-21':'2014-01-27'
+cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
+        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
+        'Pumpspeicher (Entladen)', 'Import']
+df_dispatch['2014-01-21':'2014-01-27'][cols] \
+             .plot(kind='area', stacked=True, linewidth=0, legend='reverse',
+                   cmap=cm.get_cmap('Spectral'))
+plt.xlabel('Datum')
+plt.ylabel('Leistung in  GW')
+plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.4)
+plt.show()
 
 # %% duration curves for power plants
 curves = pd.concat(
-    [dispatch_de[col].sort_values(ascending=False).reset_index(drop=True)
-     for col in dispatch_de], axis=1)
+    [df_dispatch[col].sort_values(ascending=False).reset_index(drop=True)
+     for col in df_dispatch], axis=1)
 curves[['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl',
-        'Sonstiges', 'Solar', 'Wind', 'Pumpspeicher',
+        'Sonstiges', 'Solar', 'Wind', 'Pumpspeicher (Entladen)',
         'Import', 'Export']].plot(cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
-plt.ylabel('Leistung in GW')
-plt.show()
-
-
-# %% duration curves for power plants ordered by load (stacked)
-curves_stacked = dispatch_de
-curves_stacked = curves_stacked.sort_values(by=['Last'], ascending=False)
-curves_stacked.reset_index(drop=True, inplace=True)
-
-curves_stacked[['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
-                'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
-                'Pumpspeicher',
-                'Import']].plot(kind='area', stacked=True,
-                                legend='reverse',
-                                cmap=cm.get_cmap('Spectral'))
-plt.xlabel('Stunden des Jahres geordnet nach der Last')
 plt.ylabel('Leistung in GW')
 plt.show()
 
@@ -242,11 +267,6 @@ plt.legend('')
 
 plt.show()
 
-
-# %% dispatch of norwegian hydro power plants
-
-
-
 ## %% spline interpolation
 #
 #df = df_raw[['duals']]
@@ -329,6 +349,7 @@ df_prices.to_csv('prices_all_scenarios_with_sensivities.csv')
 df_prices.plot(kind='box', rot=90,
                color={'medians': 'k', 'boxes': 'k', 'whiskers': 'k',
                       'caps': 'k'})
+plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
 plt.show()
 
@@ -343,7 +364,7 @@ df_prices[['nep_2014_base', 'nep_2035_demand_minus_25',
     .plot(kind='hist', bins=25, normed=True, subplots=True, sharex=True,
           sharey=True, layout=(7, 2), cmap=cm.get_cmap('Spectral'))
 [ax.legend(loc='upper right') for ax in plt.gcf().axes]
-plt.suptitle('Preise in EUR/MWh (25 Bins)', size=20)
+plt.suptitle('Preis in EUR/MWh (25 Bins)', size=20)
 plt.show()
 
 # duration curves for all scenarios
@@ -368,12 +389,6 @@ plt.show()
 
 #df_prices['2035-01':'2035-02'].plot(drawstyle='steps')
 #plt.show()
-
-
-pd.concat([dispatch_de.sum().to_frame().transpose(),
-           dispatch_de.sum().to_frame().transpose()*1.2]).plot(kind='bar',
-                                                           stacked=True)
-plt.show()
 
 
 # %% plot of annual production for scenarios
@@ -472,13 +487,20 @@ df_dispatch['load'] = df_dispatch['load'].multiply(-1)
 df_dispatch['phs_in'] = df_dispatch['phs_in'].multiply(-1)
 df_dispatch['exports'] = df_dispatch['exports'].multiply(-1)
 df_dispatch['excess'] = df_dispatch['excess'].multiply(-1)
-df_dispatch[['load', 'phs_out', 'phs_in', 'run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-             'hard_coal', 'gas', 'mixed_fuels', 'oil', 'imports', 'exports',
-             'shortage', 'excess']] \
-             .plot(kind='bar', stacked=True, legend='reverse',
-                   cmap=cm.get_cmap('Spectral'))
+
+# check if balance fits
+df_dispatch.drop(['phs_level'], axis=1).sum(axis=1)
+
+cols = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+        'hard_coal', 'gas', 'mixed_fuels', 'oil',  'phs_out',
+        'imports', 'shortage',
+        'load', 'phs_in', 'exports', 'excess']
+df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
+#plt.legend(loc='center left', ncol=11)
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 #plt.tight_layout()
 plt.show()
+
+# %% dispatch of norwegian hydro power plants
