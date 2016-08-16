@@ -42,11 +42,17 @@ price_real.index = df.index
 df = pd.concat([price_real, df], axis=1)
 df.columns = ['price_real', 'price_model']
 
+# line plot
 df.plot(drawstyle='steps')
 plt.xlabel('Zeit in h')
 plt.ylabel('Preis in EUR/MWh')
 plt.show()
 
+# scatter plot
+df.plot(kind='scatter', x='price_model', y='price_real')
+plt.xlabel('Modellpreis')
+plt.ylabel('Realpreis')
+plt.show()
 
 # %% plot fundamental and regression prices (8 weeks)
 
