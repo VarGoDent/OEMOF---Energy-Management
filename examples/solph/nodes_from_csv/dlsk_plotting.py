@@ -60,37 +60,37 @@ plt.ylabel('Preis in EUR/MWh')
 plt.show()
 
 
-# %% polynom fitting: residual load
-
-# prepare dataframe for fit
-residual_load = df_raw['DE_load'] + df_raw['AT_load'] + df_raw['LU_load'] - \
-                df_raw['DE_wind'] - df_raw['AT_wind'] - df_raw['LU_wind'] - \
-                df_raw['DE_solar'] - df_raw['AT_solar'] - df_raw['LU_solar']
-
-# real prices
-price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
-price_real.index = df_raw.index
-
-df = pd.concat([residual_load, price_real, df_raw['duals']], axis=1)
-df.columns = ['res_load', 'price_real', 'price_model']
-
-# fit polynom of 3rd degree to price_real(res_load)
-z = np.polyfit(df['res_load'], df['price_real'], 3)
-p = np.poly1d(z)
-df['price_polynom_res_load'] = p(df['res_load'])
-
-df.plot.scatter(x='res_load', y='price_real')
-plt.plot(df['res_load'],
-         (
-          z[0] * df['res_load'] ** 3 +
-          z[1] * df['res_load'] ** 2 +
-          z[2] * df['res_load'] ** 1 +
-          z[3]
-          ), color='red')
-plt.xlabel('Residuallast in MW')
-plt.ylabel('Day-Ahead Preis in EUR/MWh')
-
-plt.show()
+## %% polynom fitting: residual load
+#
+## prepare dataframe for fit
+#residual_load = df_raw['DE_load'] + df_raw['AT_load'] + df_raw['LU_load'] - \
+#                df_raw['DE_wind'] - df_raw['AT_wind'] - df_raw['LU_wind'] - \
+#                df_raw['DE_solar'] - df_raw['AT_solar'] - df_raw['LU_solar']
+#
+## real prices
+#price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
+#price_real.index = df_raw.index
+#
+#df = pd.concat([residual_load, price_real, df_raw['duals']], axis=1)
+#df.columns = ['res_load', 'price_real', 'price_model']
+#
+## fit polynom of 3rd degree to price_real(res_load)
+#z = np.polyfit(df['res_load'], df['price_real'], 3)
+#p = np.poly1d(z)
+#df['price_polynom_res_load'] = p(df['res_load'])
+#
+#df.plot.scatter(x='res_load', y='price_real')
+#plt.plot(df['res_load'],
+#         (
+#          z[0] * df['res_load'] ** 3 +
+#          z[1] * df['res_load'] ** 2 +
+#          z[2] * df['res_load'] ** 1 +
+#          z[3]
+#          ), color='red')
+#plt.xlabel('Residuallast in MW')
+#plt.ylabel('Day-Ahead Preis in EUR/MWh')
+#
+#plt.show()
 
 
 # %% dispatch plot (balance doesn't fit since DE/LU/AT are one bidding area)
@@ -141,7 +141,8 @@ df_dispatch['phs_level'] = phs_level.sum(axis=1)
 # MW to GW
 df_dispatch = df_dispatch.divide(1000)
 
-# dict with new column names
+# rename columns
+
 en_de = {'run_of_river': 'Laufwasser',
          'biomass': 'Biomasse',
          'solar': 'Solar',
@@ -156,7 +157,9 @@ en_de = {'run_of_river': 'Laufwasser',
          'phs_out': 'Pumpspeicher (Entladen)',
          'imports': 'Import',
          'exports': 'Export',
-         'load': 'Last'}
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
 df_dispatch = df_dispatch.rename(columns=en_de)
 
 # area plot. gute woche: '2014-01-21':'2014-01-27'
@@ -491,16 +494,117 @@ df_dispatch['excess'] = df_dispatch['excess'].multiply(-1)
 # check if balance fits
 df_dispatch.drop(['phs_level'], axis=1).sum(axis=1)
 
-cols = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-        'hard_coal', 'gas', 'mixed_fuels', 'oil',  'phs_out',
-        'imports', 'shortage',
-        'load', 'phs_in', 'exports', 'excess']
+# rename columns
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
+
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
+        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
+        'Pumpspeicher (Entladen)', 'Import', 'Ungedeckte Nachfrage',
+        'Last', 'Pumpspeicher (Laden)', 'Export', 'Überschüssige Energie']
+
 df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
-#plt.legend(loc='center left', ncol=11)
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 #plt.tight_layout()
 plt.show()
 
 # %% dispatch of norwegian hydro power plants
+
+file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_NO.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_dispatch = pd.DataFrame()
+
+# country code
+cc = ['NO']
+
+# get fossil and renewable power plants
+fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
+         'shortage']
+for f in fuels:
+    cols = [c for c in df.columns
+            if f in c and any(substring in c
+                              for substring in cc)]
+    df_dispatch[f] = df[cols].sum(axis=1)
+
+# get imports and exports and aggregate columns
+cols = [c for c in df.columns
+        if 'powerline' in c and any(substring in c
+                                    for substring in cc)]
+powerlines = df[cols]
+exports = powerlines[[c for c in powerlines.columns
+                      if c.startswith('NO_')]]
+imports = powerlines[[c for c in powerlines.columns
+                      if ('_' + 'NO' + '_' in c)]]
+df_dispatch['imports'] = imports.sum(axis=1)
+df_dispatch['exports'] = exports.sum(axis=1)
+
+# get phs in- and outputs
+phs_in = df[[c for c in df.columns if 'phs_in' in c and
+            any(substring in c for substring in cc)]]
+phs_out = df[[c for c in df.columns if 'phs_out' in c and
+             any(substring in c for substring in cc)]]
+phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                any(substring in c for substring in cc)]]
+df_dispatch['phs_in'] = phs_in.sum(axis=1)
+df_dispatch['phs_out'] = phs_out.sum(axis=1)
+df_dispatch['phs_level'] = phs_level.sum(axis=1)
+
+# MW to GW
+df_dispatch = df_dispatch.divide(1000)
+
+# rename columns
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+
+# Plot
+df_dispatch['Pumpspeicher (Laden)'] = \
+    df_dispatch['Pumpspeicher (Laden)'].multiply(-1)
+df_dispatch['Export'] = df_dispatch['Export'].multiply(-1)
+
+cols = ['Pumpspeicher (Entladen)', 'Pumpspeicher (Laden)']
+df_dispatch['2035-01-13':'2035-01-20'][cols] \
+             .plot(kind='line', drawstyle='steps',
+                   cmap=cm.get_cmap('Spectral'), legend='reverse')
+plt.xlabel('Datum')
+plt.ylabel('Leistung in  GW')
+plt.show()
