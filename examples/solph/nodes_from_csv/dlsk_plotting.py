@@ -164,11 +164,11 @@ cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
         'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
         'Pumpspeicher (Entladen)', 'Import']
 df_dispatch['2014-01-21':'2014-01-27'][cols] \
-             .plot(kind='area', stacked=True, linewidth=0, legend='reverse',
-                   cmap=cm.get_cmap('Spectral'))
+             .plot(kind='area', stacked=True,
+                   cmap=cm.get_cmap('Spectral'), legend='reverse')
 plt.xlabel('Datum')
 plt.ylabel('Leistung in  GW')
-plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.4)
+plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.55)
 plt.show()
 
 # %% duration curves for power plants
