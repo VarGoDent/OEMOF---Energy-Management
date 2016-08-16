@@ -566,84 +566,74 @@ plt.ylabel('TWh')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 plt.show()
 
-# %% dispatch of norwegian hydro power plants
+# %% influence of norwegian hydro power plants
 
-file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_NO.csv'
+file_name = 'scenario_nep_2025_2016-08-16 14:52:22.118405_NO.csv'
 
 df = pd.read_csv('results/' + file_name, parse_dates=[0],
                  index_col=0, keep_date_col=True)
 
-df_dispatch = pd.DataFrame()
-
-# country code
-cc = ['NO']
-
-# get fossil and renewable power plants
-fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
-         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
-         'shortage']
-for f in fuels:
-    cols = [c for c in df.columns
-            if f in c and any(substring in c
-                              for substring in cc)]
-    df_dispatch[f] = df[cols].sum(axis=1)
-
-# get imports and exports and aggregate columns
-cols = [c for c in df.columns
-        if 'powerline' in c and any(substring in c
-                                    for substring in cc)]
-powerlines = df[cols]
-exports = powerlines[[c for c in powerlines.columns
-                      if c.startswith('NO_')]]
-imports = powerlines[[c for c in powerlines.columns
-                      if ('_' + 'NO' + '_' in c)]]
-df_dispatch['imports'] = imports.sum(axis=1)
-df_dispatch['exports'] = exports.sum(axis=1)
-
-# get phs in- and outputs
-phs_in = df[[c for c in df.columns if 'phs_in' in c and
-            any(substring in c for substring in cc)]]
-phs_out = df[[c for c in df.columns if 'phs_out' in c and
-             any(substring in c for substring in cc)]]
-phs_level = df[[c for c in df.columns if 'phs_level' in c and
-                any(substring in c for substring in cc)]]
-df_dispatch['phs_in'] = phs_in.sum(axis=1)
-df_dispatch['phs_out'] = phs_out.sum(axis=1)
-df_dispatch['phs_level'] = phs_level.sum(axis=1)
+df_dispatch = df
 
 # MW to GW
 df_dispatch = df_dispatch.divide(1000)
 
 # rename columns
-en_de = {'run_of_river': 'Laufwasser',
-         'biomass': 'Biomasse',
-         'solar': 'Solar',
-         'wind': 'Wind',
-         'uranium': 'Kernenergie',
-         'lignite': 'Braunkohle',
-         'hard_coal': 'Steinkohle',
-         'gas': 'Gas',
-         'mixed_fuels': 'Sonstiges',
-         'oil': 'Öl',
-         'phs_in': 'Pumpspeicher (Laden)',
-         'phs_out': 'Pumpspeicher (Entladen)',
-         'imports': 'Import',
-         'exports': 'Export',
-         'load': 'Last',
-         'shortage': 'Ungedeckte Nachfrage',
-         'excess': 'Überschüssige Energie'}
+en_de = {'NO_run_of_river': 'Laufwasser',
+         'NO_pp_biomass': 'Biomasse',
+         'NO_solar': 'Solar',
+         'NO_wind': 'Wind',
+         'NO_pp_uranium': 'Kernenergie',
+         'NO_pp_lignite': 'Braunkohle',
+         'NO_pp_hard_coal': 'Steinkohle',
+         'NO_pp_gas': 'Gas',
+         'NO_pp_mixed_fuels': 'Sonstiges',
+         'NO_pp_oil': 'Öl',
+         'NO_storage_phs_in': 'Pumpspeicher (Laden)',
+         'NO_storage_phs_out': 'Pumpspeicher (Entladen)',
+         'NO_load': 'Last',
+         'NO_shortage': 'Ungedeckte Nachfrage',
+         'NO_excess': 'Überschüssige Energie',
+         'DE_NO_powerline': 'DE-NO',
+         'NO_DE_powerline': 'NO-DE'}
 df_dispatch = df_dispatch.rename(columns=en_de)
 
-
 # Plot
-df_dispatch['Pumpspeicher (Laden)'] = \
-    df_dispatch['Pumpspeicher (Laden)'].multiply(-1)
-df_dispatch['Export'] = df_dispatch['Export'].multiply(-1)
-
-cols = ['Pumpspeicher (Entladen)', 'Pumpspeicher (Laden)']
-df_dispatch['2035-01-13':'2035-01-20'][cols] \
-             .plot(kind='line', drawstyle='steps',
-                   cmap=cm.get_cmap('Spectral'), legend='reverse')
-plt.xlabel('Datum')
+cols = ['Pumpspeicher (Entladen)', 'Pumpspeicher (Laden)',
+        ]
+df_dispatch['2025-01-13':'2025-01-14'][cols] \
+             .plot(drawstyle='steps', cmap=cm.get_cmap('Spectral'))
 plt.ylabel('Leistung in  GW')
+
+df_dispatch['2025-01-13':'2025-01-14']['NO_storage_phs_level'] \
+             .plot(secondary_y=True, drawstyle='steps', linestyle='--',
+                   color='k')
+plt.xlabel('Datum')
+plt.ylabel('Füllstand in  GWh')
 plt.show()
+
+# duration curves
+cols = ['Überschüssige Energie', 'Laufwasser',
+        'Pumpspeicher (Laden)',
+        'Pumpspeicher (Entladen)',
+        'DE-NO', 'NO-DE']
+df_duration = pd.concat(
+    [df_dispatch[col].sort_values(ascending=False).reset_index(drop=True)
+     for col in df_dispatch[cols]], axis=1)
+df_duration.plot(legend='reverse', cmap=cm.get_cmap('Spectral'))
+plt.xlabel('Stunden des Jahres')
+plt.ylabel('GW')
+plt.tight_layout()
+plt.show()
+
+## scatter plot
+#df_dispatch[cols].plot(kind='scatter',
+#                       x='Pumpspeicher (Entladen)',
+#                       y='NO-DE')
+#plt.show()
+#
+#
+#df_dispatch[cols].plot(kind='scatter',
+#                       x='Pumpspeicher (Laden)',
+#                       y='DE-NO')
+#plt.show()
