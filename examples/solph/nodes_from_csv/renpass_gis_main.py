@@ -15,8 +15,8 @@ from oemof.outputlib import ResultsDataFrame
 
 scenario_path = 'scenarios/'
 
-date_from = '2035-01-01 00:00:00'
-date_to = '2035-12-31 23:00:00'
+date_from = '2025-01-01 00:00:00'
+date_to = '2025-12-31 23:00:00'
 
 nodes_flows = 'nep_2025.csv'
 nodes_flows_sequences = 'nep_2014_seq.csv'

@@ -30,10 +30,14 @@ df_raw.columns
 
 # %% plot fundamental and regression prices (1 year)
 
-df = df_raw[['duals']]
+file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+df = df[['duals']]
 
 price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
-price_real.index = df_raw.index
+price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
 df.columns = ['price_real', 'price_model']
@@ -46,10 +50,14 @@ plt.show()
 
 # %% plot fundamental and regression prices (8 weeks)
 
-df = df_raw[['duals']]
+file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+df = df[['duals']]
 
 price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
-price_real.index = df_raw.index
+price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
 df.columns = ['price_real', 'price_model']
@@ -174,7 +182,7 @@ plt.ylabel('Leistung in  GW')
 plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.55)
 plt.show()
 
-# %% duration curves for power plants
+# duration curves for power plants
 curves = pd.concat(
     [df_dispatch[col].sort_values(ascending=False).reset_index(drop=True)
      for col in df_dispatch], axis=1)
@@ -186,7 +194,7 @@ plt.ylabel('Leistung in GW')
 plt.show()
 
 
-# %% duration curves for all powerlines
+# duration curves for all powerlines
 pls = pd.concat(
     [powerlines[col].sort_values(ascending=False).reset_index(drop=True)
      for col in powerlines], axis=1)
@@ -197,7 +205,13 @@ plt.show()
 
 
 # %% duraction curve for one cable e.g. NordLink cable
-cable = df_raw[['DE_NO_powerline', 'NO_DE_powerline']]
+
+file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+cable = df[['DE_NO_powerline', 'NO_DE_powerline']]
 cable = pd.concat(
     [cable[col].sort_values(ascending=False).reset_index(drop=True)
      for col in cable], axis=1)
@@ -211,10 +225,15 @@ plt.show()
 
 
 # %% duraction curve for prices
+file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
 power_price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
-power_price_real.set_index(df_raw.index, drop=True, inplace=True)
+power_price_real.set_index(df.index, drop=True, inplace=True)
 power_price = pd.concat([power_price_real,
-                         df_raw[['duals']]], axis=1)
+                         df[['duals']]], axis=1)
 power_price = pd.concat(
     [power_price[col].sort_values(ascending=False).reset_index(drop=True)
      for col in power_price], axis=1)
@@ -224,23 +243,34 @@ plt.ylabel('Preis in EUR/MWh')
 plt.show()
 
 
-# %% scaling
-
-df = df_raw[['duals']]
-df['duals_x_1_5'] = df['duals'] + \
-    (df['duals'].subtract(df['duals'].mean())) * 1.5
-df['duals_x_2'] = df['duals'] + \
-    (df['duals'].subtract(df['duals'].mean())) * 2
-df['duals_x_2'] = df['duals'] + \
-    (df['duals'].subtract(df['duals'].mean())) * 3
-
-df[0:24*31].plot(drawstyle='steps')
-plt.show()
+## %% scaling
+#
+#file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+#
+#df = pd.read_csv('results/' + file_name, parse_dates=[0],
+#                 index_col=0, keep_date_col=True)
+#
+#df = df[['duals']]
+#
+#df['duals_x_1_5'] = df['duals'] + \
+#    (df['duals'].subtract(df['duals'].mean())) * 1.5
+#df['duals_x_2'] = df['duals'] + \
+#    (df['duals'].subtract(df['duals'].mean())) * 2
+#df['duals_x_2'] = df['duals'] + \
+#    (df['duals'].subtract(df['duals'].mean())) * 3
+#
+#df[0:24*31].plot(drawstyle='steps')
+#plt.show()
 
 
 # %% boxplot for prices: monthly
 
-df = df_raw[['duals']]
+file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df = df[['duals']]
 df['dates'] = df.index
 df['month'] = df.index.month
 
@@ -272,7 +302,12 @@ plt.show()
 
 ## %% spline interpolation
 #
-#df = df_raw[['duals']]
+#file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+#
+#df = pd.read_csv('results/' + file_name, parse_dates=[0],
+#                 index_col=0, keep_date_col=True)
+#
+#df = df[['duals']]
 #
 #price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
 #price_real.index = df_raw.index
@@ -334,7 +369,12 @@ files = {
         'scenario_nep_2035_nordlink_minus_25_2016-08-10 13:10:34.528303_DE.csv'
 }
 
-df_prices = pd.DataFrame(index=df_raw.index)
+file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_prices = pd.DataFrame(index=df.index)
 
 for k, v in files.items():
     df = pd.read_csv('results/' + v, parse_dates=[0],
@@ -524,7 +564,6 @@ df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-#plt.tight_layout()
 plt.show()
 
 # %% dispatch of norwegian hydro power plants
