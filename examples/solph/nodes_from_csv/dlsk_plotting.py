@@ -40,7 +40,7 @@ price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
 price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
-df.columns = ['price_real', 'price_model']
+df.columns = ['Realpreis', 'Modellpreis']
 
 # line plot
 df.plot(drawstyle='steps')
@@ -49,9 +49,19 @@ plt.ylabel('Preis in EUR/MWh')
 plt.show()
 
 # scatter plot
-df.plot(kind='scatter', x='price_model', y='price_real')
+df.plot(kind='scatter', x='Modellpreis', y='Realpreis')
 plt.xlabel('Modellpreis')
 plt.ylabel('Realpreis')
+plt.show()
+
+# duration curves for all scenarios
+df_prices_duration = pd.concat(
+    [df[col].sort_values(ascending=False).reset_index(drop=True)
+     for col in df], axis=1)
+df_prices_duration.plot(legend='reverse', cmap=cm.get_cmap('Spectral'))
+plt.xlabel('Stunden des Jahres')
+plt.ylabel('Preis in EUR/MWh')
+plt.tight_layout()
 plt.show()
 
 # %% plot fundamental and regression prices (8 weeks)
@@ -249,26 +259,6 @@ plt.ylabel('Preis in EUR/MWh')
 plt.show()
 
 
-## %% scaling
-#
-#file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
-#
-#df = pd.read_csv('results/' + file_name, parse_dates=[0],
-#                 index_col=0, keep_date_col=True)
-#
-#df = df[['duals']]
-#
-#df['duals_x_1_5'] = df['duals'] + \
-#    (df['duals'].subtract(df['duals'].mean())) * 1.5
-#df['duals_x_2'] = df['duals'] + \
-#    (df['duals'].subtract(df['duals'].mean())) * 2
-#df['duals_x_2'] = df['duals'] + \
-#    (df['duals'].subtract(df['duals'].mean())) * 3
-#
-#df[0:24*31].plot(drawstyle='steps')
-#plt.show()
-
-
 # %% boxplot for prices: monthly
 
 file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
@@ -434,7 +424,6 @@ plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
 plt.show()
-
 
 #df_prices['2035-01':'2035-02'].plot(drawstyle='steps')
 #plt.show()
