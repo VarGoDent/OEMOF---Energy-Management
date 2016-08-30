@@ -219,13 +219,25 @@ plt.show()
 
 # bar plot of annual production
 cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
-        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind',
-        'Pumpspeicher (Entladen)', 'Import']
-df_dispatch['2014'][cols].divide(1000).sum(axis=0).to_frame() \
-             .plot(kind='bar', legend=False,
-                   cmap=cm.get_cmap('RdYlBu'))
+        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind']
+annual_production = df_dispatch[cols].divide(1000).sum(axis=0).to_frame()
+annual_production = annual_production.transpose()
+
+# real production 2014
+#http://www.bmwi.de/DE/Themen/Energie/Strommarkt-der-Zukunft/zahlen-fakten.html
+real_2014 = pd.DataFrame([[43.3, 19.6, 97.1, 155.8, 118.6, 61.1, 5.7, 27.3,
+                           36.1, 57.4]],
+                         columns=annual_production.columns)
+annual_production = annual_production.append(real_2014, ignore_index=True)
+annual_production.index = ['Model', 'Real']
+
+annual_production = annual_production[
+    ['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl', 'Sonstiges',
+     'Solar', 'Wind', 'Biomasse', 'Laufwasser']]
+
+annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Datum')
-plt.ylabel('Produktion in  TWh')
+plt.ylabel('Energieproduktion in  TWh')
 plt.show()
 
 # duration curves for power plants
