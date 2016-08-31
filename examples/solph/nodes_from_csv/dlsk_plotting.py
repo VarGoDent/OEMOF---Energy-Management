@@ -16,7 +16,7 @@ plt.rcParams['xtick.color'] = 'k'
 plt.rcParams['ytick.color'] = 'k'
 plt.rcParams['text.color'] = 'k'
 plt.rcParams['axes.labelcolor'] = 'k'
-plt.rcParams.update({'font.size': 10})
+plt.rcParams.update({'font.size': 14})
 plt.rcParams['image.cmap'] = 'RdYlBu'
 
 # read file
@@ -40,18 +40,20 @@ price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
 price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
-df.columns = ['Realpreis', 'Modellpreis']
+df.columns = ['Real', 'Modell']
 
 # line plot
-df.plot(drawstyle='steps')
+df.plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Zeit in h')
 plt.ylabel('Preis in EUR/MWh')
+plt.tight_layout()
 plt.show()
 
 # scatter plot
-df.plot(kind='scatter', x='Modellpreis', y='Realpreis')
+df.plot(kind='scatter', x='Modell', y='Real')
 plt.xlabel('Modellpreis')
 plt.ylabel('Realpreis')
+plt.tight_layout()
 plt.show()
 
 # duration curves for all scenarios
@@ -76,11 +78,12 @@ price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
 price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
-df.columns = ['price_real', 'price_model']
+df.columns = ['Real', 'Modell']
 
-df[(24 * 7)*8:(24 * 7)*16].plot(drawstyle='steps')
-plt.xlabel('Zeit in h')
+df[(24 * 7)*8:(24 * 7)*16].plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+plt.xlabel('')
 plt.ylabel('Preis in EUR/MWh')
+plt.tight_layout()
 plt.show()
 
 
@@ -96,11 +99,12 @@ price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
 price_real.index = df.index
 
 df = pd.concat([price_real, df], axis=1)
-df.columns = ['price_real', 'price_model']
+df.columns = ['Real', 'Modell']
 
-df[(24 * 7)*21:(24 * 7)*22].plot(drawstyle='steps')
-plt.xlabel('Zeit in h')
+df[(24 * 7)*21:(24 * 7)*22].plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+plt.xlabel('')
 plt.ylabel('Preis in EUR/MWh')
+plt.tight_layout()
 plt.show()
 
 ## %% polynom fitting: residual load
@@ -136,7 +140,7 @@ plt.show()
 #plt.show()
 
 
-# %% dispatch plot (balance doesn't fit since DE/LU/AT are one bidding area)
+# %% dispatch plot (DE/LU/AT are one bidding area -> balance must not fit)
 
 file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
 
@@ -215,6 +219,7 @@ df_dispatch['2014-01-21':'2014-01-27'][cols] \
 plt.xlabel('Datum')
 plt.ylabel('Leistung in  GW')
 plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.55)
+plt.tight_layout()
 plt.show()
 
 # bar plot of annual production
@@ -229,15 +234,17 @@ real_2014 = pd.DataFrame([[43.3, 19.6, 97.1, 155.8, 118.6, 61.1, 5.7, 27.3,
                            36.1, 57.4]],
                          columns=annual_production.columns)
 annual_production = annual_production.append(real_2014, ignore_index=True)
-annual_production.index = ['Model', 'Real']
+annual_production.index = ['Modell', 'Real']
 
 annual_production = annual_production[
     ['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl', 'Sonstiges',
      'Solar', 'Wind', 'Biomasse', 'Laufwasser']]
 
-annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('RdYlBu'))
-plt.xlabel('Datum')
+annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('RdYlBu'),
+                       rot=0)
+plt.xlabel('')
 plt.ylabel('Energieproduktion in  TWh')
+plt.tight_layout()
 plt.show()
 
 # duration curves for power plants
@@ -249,18 +256,50 @@ curves[['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl',
         'Import', 'Export']].plot(cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
+plt.tight_layout()
 plt.show()
-
 
 # duration curves for all powerlines
 pls = pd.concat(
     [powerlines[col].sort_values(ascending=False).reset_index(drop=True)
      for col in powerlines], axis=1)
-pls.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+pls.columns = [c.replace('_powerline', '') for c in pls.columns]
+pls = pls[[
+    'DE_AT', 'DE_CH', 'DE_CZ',
+    'DE_DK', 'DE_FR', 'DE_LU',
+    'DE_NL', 'DE_PL', 'DE_SE',
+    'AT_DE', 'CH_DE', 'CZ_DE',
+    'DK_DE', 'FR_DE', 'NL_DE',
+    'PL_DE', 'SE_DE']]
+
+pls.plot(cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
+plt.xlim(0, 10000)
+plt.tight_layout()
 plt.show()
 
+# bar plot of powerlines (imports/exports)
+pls_sum = pls.sum(axis=0).divide(10e6).to_frame().transpose()
+
+exp = pls_sum[[c for c in pls.columns if c.startswith('DE_')]]
+imp = pls_sum[[c for c in pls.columns if not c.startswith('DE_')]]
+pls_sum_div = pd.concat([imp, exp], axis=0)
+pls_sum_div.index = ['Import', 'Export']
+pls_sum_div = pls_sum_div[[
+    'DE_AT', 'DE_CH', 'DE_CZ',
+    'DE_DK', 'DE_FR', 'DE_LU',
+    'DE_NL', 'DE_PL', 'DE_SE',
+    'AT_DE', 'CH_DE', 'CZ_DE',
+    'DK_DE', 'FR_DE', 'NL_DE',
+    'PL_DE', 'SE_DE']]
+
+pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('RdYlBu'), rot=0,
+                 legend='reverse')
+plt.xlabel('')
+plt.ylabel('Energie in TWh')
+plt.tight_layout()
+plt.show()
 
 # %% duraction curve for one cable e.g. NordLink cable
 
@@ -279,6 +318,7 @@ cable.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
 plt.ylim(0, max(cable.sum(axis=1)) * 1.2)
+plt.tight_layout()
 plt.show()
 
 
@@ -298,6 +338,7 @@ power_price = pd.concat(
 power_price.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
+plt.tight_layout()
 plt.show()
 
 
@@ -315,18 +356,11 @@ df['month'] = df.index.month
 df_box = df.pivot(index='dates', columns='month', values='duals')
 
 bp = df_box.boxplot(showfliers=False, showmeans=True, return_type='dict')
-plt.xlabel('Monat', fontsize=20)
-plt.ylabel('Preis in EUR/MWh', fontsize=22)
-plt.tick_params(axis='y', labelsize=14)
-plt.tick_params(axis='x', labelsize=14)
+plt.xlabel('Monat')
+plt.ylabel('Preis in EUR/MWh')
+plt.tick_params(axis='y')
+plt.tick_params(axis='x')
 plt.legend('')
-
-[[item.set_linewidth(2) for item in bp['boxes']]]
-[[item.set_linewidth(2) for item in bp['fliers']]]
-[[item.set_linewidth(2) for item in bp['medians']]]
-[[item.set_linewidth(2) for item in bp['means']]]
-[[item.set_linewidth(2) for item in bp['whiskers']]]
-[[item.set_linewidth(2) for item in bp['caps']]]
 
 [[item.set_color('k') for item in bp['boxes']]]
 [[item.set_color('k') for item in bp['fliers']]]
@@ -601,6 +635,7 @@ df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('RdYlBu'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+plt.tight_layout()
 plt.show()
 
 # %% influence of norwegian hydro power plants
@@ -647,6 +682,7 @@ df_dispatch['2025-01-13':'2025-01-14']['NO_storage_phs_level'] \
                    color='k')
 plt.xlabel('Datum')
 plt.ylabel('Füllstand in  GWh')
+plt.tight_layout()
 plt.show()
 
 # duration curves
