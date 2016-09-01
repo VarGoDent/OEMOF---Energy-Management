@@ -75,8 +75,9 @@ plt.show()
 df_prices_duration = pd.concat(
     [df[col].sort_values(ascending=False).reset_index(drop=True)
      for col in df], axis=1)
-df_prices_duration['Real',
-                   'Modell'].plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+df_prices_duration[['Real',
+                   'Modell']].plot(legend='reverse',
+                                   cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -156,7 +157,8 @@ plt.show()
 #plt.show()
 
 
-# %% dispatch plot (DE/LU/AT are one bidding area -> balance must not fit)
+# %% dispatch plot: 2014
+# (DE/LU/AT are one bidding area -> balance must not fit)
 
 file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
 
@@ -327,6 +329,292 @@ plt.xlabel('')
 plt.ylabel('Energie in TWh')
 plt.tight_layout()
 plt.show()
+
+# %% dispatch plot: 2025/2035
+# (DE/LU/AT are one bidding area -> balance must not fit)
+
+# ################## 2025 #####################################################
+
+file_name = 'scenario_nep_2025_2016-08-16 14:52:22.118405_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_dispatch = pd.DataFrame()
+
+# country code
+cc = ['DE', 'LU', 'AT']
+
+# get fossil and renewable power plants
+fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
+         'shortage']
+for f in fuels:
+    cols = [c for c in df.columns
+            if f in c and any(substring in c
+                              for substring in cc)]
+    df_dispatch[f] = df[cols].sum(axis=1)
+
+# get imports and exports and aggregate columns
+cols = [c for c in df.columns
+        if 'powerline' in c and any(substring in c
+                                    for substring in cc)]
+powerlines = df[cols]
+exports = powerlines[[c for c in powerlines.columns
+                      if c.startswith('DE_')]]
+imports = powerlines[[c for c in powerlines.columns
+                      if ('_' + 'DE' + '_' in c)]]
+df_dispatch['imports'] = imports.sum(axis=1)
+df_dispatch['exports'] = exports.sum(axis=1)
+
+# get phs in- and outputs
+phs_in = df[[c for c in df.columns if 'phs_in' in c and
+            any(substring in c for substring in cc)]]
+phs_out = df[[c for c in df.columns if 'phs_out' in c and
+             any(substring in c for substring in cc)]]
+phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                any(substring in c for substring in cc)]]
+df_dispatch['phs_in'] = phs_in.sum(axis=1)
+df_dispatch['phs_out'] = phs_out.sum(axis=1)
+df_dispatch['phs_level'] = phs_level.sum(axis=1)
+
+# MW to GW
+df_dispatch = df_dispatch.divide(1000)
+
+# rename columns
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+
+# bar plot of annual production
+cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
+        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind']
+annual_production_2025 = df_dispatch[cols].divide(1000).sum(axis=0).to_frame()
+annual_production_2025 = annual_production_2025.transpose()
+
+
+# ################### 2035 ####################################################
+
+file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_dispatch = pd.DataFrame()
+
+# country code
+cc = ['DE', 'LU', 'AT']
+
+# get fossil and renewable power plants
+fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
+         'shortage']
+for f in fuels:
+    cols = [c for c in df.columns
+            if f in c and any(substring in c
+                              for substring in cc)]
+    df_dispatch[f] = df[cols].sum(axis=1)
+
+# get imports and exports and aggregate columns
+cols = [c for c in df.columns
+        if 'powerline' in c and any(substring in c
+                                    for substring in cc)]
+powerlines = df[cols]
+exports = powerlines[[c for c in powerlines.columns
+                      if c.startswith('DE_')]]
+imports = powerlines[[c for c in powerlines.columns
+                      if ('_' + 'DE' + '_' in c)]]
+df_dispatch['imports'] = imports.sum(axis=1)
+df_dispatch['exports'] = exports.sum(axis=1)
+
+# get phs in- and outputs
+phs_in = df[[c for c in df.columns if 'phs_in' in c and
+            any(substring in c for substring in cc)]]
+phs_out = df[[c for c in df.columns if 'phs_out' in c and
+             any(substring in c for substring in cc)]]
+phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                any(substring in c for substring in cc)]]
+df_dispatch['phs_in'] = phs_in.sum(axis=1)
+df_dispatch['phs_out'] = phs_out.sum(axis=1)
+df_dispatch['phs_level'] = phs_level.sum(axis=1)
+
+# MW to GW
+df_dispatch = df_dispatch.divide(1000)
+
+# rename columns
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+
+# bar plot of annual production
+cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
+        'Steinkohle', 'Gas', 'Öl', 'Sonstiges', 'Solar', 'Wind']
+annual_production_2035 = df_dispatch[cols].divide(1000).sum(axis=0).to_frame()
+annual_production_2035 = annual_production_2035.transpose()
+
+# ######################## Plot ###############################################
+
+annual_production_2025 = \
+    annual_production_2025.append(annual_production_2035, ignore_index=True)
+
+
+annual_production_2025.index = ['NEP-2025', 'NEP-2035']
+
+annual_production_2025 = annual_production_2025[
+    ['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl', 'Sonstiges',
+     'Solar', 'Wind', 'Biomasse', 'Laufwasser']]
+
+annual_production_2025.plot(kind='bar', legend=True,
+                            cmap=cm.get_cmap('RdYlBu'),
+                            rot=0)
+plt.xlabel('')
+plt.ylabel('Energieproduktion in  TWh')
+plt.tight_layout()
+plt.show()
+
+# %% import/export plot 2025
+file_name = 'scenario_nep_2025_2016-08-16 14:52:22.118405_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df_dispatch = pd.DataFrame()
+
+# country code
+cc = ['DE', 'LU', 'AT']
+
+# get fossil and renewable power plants
+fuels = ['run_of_river', 'biomass', 'solar', 'wind', 'uranium', 'lignite',
+         'hard_coal', 'gas', 'mixed_fuels', 'oil', 'load', 'excess',
+         'shortage']
+for f in fuels:
+    cols = [c for c in df.columns
+            if f in c and any(substring in c
+                              for substring in cc)]
+    df_dispatch[f] = df[cols].sum(axis=1)
+
+# get imports and exports and aggregate columns
+cols = [c for c in df.columns
+        if 'powerline' in c and any(substring in c
+                                    for substring in cc)]
+powerlines = df[cols]
+exports = powerlines[[c for c in powerlines.columns
+                      if c.startswith('DE_')]]
+imports = powerlines[[c for c in powerlines.columns
+                      if ('_' + 'DE' + '_' in c)]]
+df_dispatch['imports'] = imports.sum(axis=1)
+df_dispatch['exports'] = exports.sum(axis=1)
+
+# get phs in- and outputs
+phs_in = df[[c for c in df.columns if 'phs_in' in c and
+            any(substring in c for substring in cc)]]
+phs_out = df[[c for c in df.columns if 'phs_out' in c and
+             any(substring in c for substring in cc)]]
+phs_level = df[[c for c in df.columns if 'phs_level' in c and
+                any(substring in c for substring in cc)]]
+df_dispatch['phs_in'] = phs_in.sum(axis=1)
+df_dispatch['phs_out'] = phs_out.sum(axis=1)
+df_dispatch['phs_level'] = phs_level.sum(axis=1)
+
+# MW to GW
+df_dispatch = df_dispatch.divide(1000)
+
+# rename columns
+
+en_de = {'run_of_river': 'Laufwasser',
+         'biomass': 'Biomasse',
+         'solar': 'Solar',
+         'wind': 'Wind',
+         'uranium': 'Kernenergie',
+         'lignite': 'Braunkohle',
+         'hard_coal': 'Steinkohle',
+         'gas': 'Gas',
+         'mixed_fuels': 'Sonstiges',
+         'oil': 'Öl',
+         'phs_in': 'Pumpspeicher (Laden)',
+         'phs_out': 'Pumpspeicher (Entladen)',
+         'imports': 'Import',
+         'exports': 'Export',
+         'load': 'Last',
+         'shortage': 'Ungedeckte Nachfrage',
+         'excess': 'Überschüssige Energie'}
+df_dispatch = df_dispatch.rename(columns=en_de)
+
+# duration curves for all powerlines
+pls = pd.concat(
+    [powerlines[col].sort_values(ascending=False).reset_index(drop=True)
+     for col in powerlines], axis=1)
+pls.columns = [c.replace('_powerline', '') for c in pls.columns]
+pls = pls[[
+    'DE_AT', 'DE_CH', 'DE_CZ',
+    'DE_DK', 'DE_FR', 'DE_LU',
+    'DE_NL', 'DE_NO', 'DE_PL', 'DE_SE',
+    'AT_DE', 'CH_DE', 'CZ_DE',
+    'DK_DE', 'FR_DE', 'NL_DE', 'NO_DE',
+    'PL_DE', 'SE_DE']]
+
+pls[['NO_DE', 'DE_NO']].plot(cmap=cm.get_cmap('RdYlBu'))
+plt.xlabel('Stunden des Jahres')
+plt.ylabel('Leistung in GW')
+plt.xlim(0, 10000)
+plt.ylim(0, 1500)
+plt.tight_layout()
+plt.show()
+
+# bar plot of powerlines (imports/exports)
+pls_sum = pls.sum(axis=0).divide(10e6).to_frame().transpose()
+
+exp = pls_sum[[c for c in pls.columns if c.startswith('DE_')]]
+imp = pls_sum[[c for c in pls.columns if not c.startswith('DE_')]]
+pls_sum_div = pd.concat([imp, exp], axis=0)
+pls_sum_div.index = ['Import', 'Export']
+pls_sum_div = pls_sum_div[[
+    'DE_AT', 'DE_CH', 'DE_CZ',
+    'DE_DK', 'DE_FR', 'DE_LU',
+    'DE_NL', 'DE_NO', 'DE_PL', 'DE_SE',
+    'AT_DE', 'CH_DE', 'CZ_DE',
+    'DK_DE', 'FR_DE', 'NL_DE', 'NO_DE',
+    'PL_DE', 'SE_DE']]
+
+pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('Paired'), rot=0,
+                 legend='reverse')
+plt.xlabel('')
+plt.ylabel('Energie in TWh')
+plt.tight_layout()
+plt.show()
+
 
 # %% duraction curve for one cable e.g. NordLink cable
 
@@ -702,18 +990,21 @@ cols = ['Pumpspeicher (Entladen)', 'Pumpspeicher (Laden)',
         ]
 df_dispatch['2025-01-13':'2025-01-14'][cols] \
              .plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+plt.xlabel('')
 plt.ylabel('Leistung in  GW')
+plt.ylim(0, 1)
 
 df_dispatch['2025-01-13':'2025-01-14']['NO_storage_phs_level'] \
              .plot(secondary_y=True, drawstyle='steps', linestyle='--',
                    color='k')
-plt.xlabel('Datum')
+plt.xlabel('')
 plt.ylabel('Füllstand in  GWh')
+plt.ylim(0, 10)
 plt.tight_layout()
 plt.show()
 
 # duration curves
-cols = ['Überschüssige Energie', 'Laufwasser',
+cols = ['Laufwasser',
         'Pumpspeicher (Laden)',
         'Pumpspeicher (Entladen)',
         'DE-NO', 'NO-DE']
@@ -722,6 +1013,8 @@ df_duration = pd.concat(
      for col in df_dispatch[cols]], axis=1)
 df_duration.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
+plt.xlim(0, 10000)
+plt.ylim(0, 30)
 plt.ylabel('GW')
 plt.tight_layout()
 plt.show()
