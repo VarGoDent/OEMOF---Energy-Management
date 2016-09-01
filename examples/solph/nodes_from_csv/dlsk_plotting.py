@@ -49,8 +49,23 @@ plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
 plt.show()
 
+
 # scatter plot
 df.plot(kind='scatter', x='Modell', y='Real')
+
+# fit polynom of 3rd degree to price_real(res_load)
+z = np.polyfit(df['Modell'], df['Real'], 3)
+p = np.poly1d(z)
+df['price_polynom'] = p(df['Modell'])
+plt.plot(df['Modell'],
+         (
+          z[0] * df['Modell'] ** 3 +
+          z[1] * df['Modell'] ** 2 +
+          z[2] * df['Modell'] ** 1 +
+          z[3]
+          ), color='red')
+
+
 plt.xlabel('Modellpreis')
 plt.ylabel('Realpreis')
 plt.tight_layout()
@@ -60,7 +75,8 @@ plt.show()
 df_prices_duration = pd.concat(
     [df[col].sort_values(ascending=False).reset_index(drop=True)
      for col in df], axis=1)
-df_prices_duration.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+df_prices_duration['Real',
+                   'Modell'].plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -218,7 +234,7 @@ df_dispatch['2014-01-21':'2014-01-27'][cols] \
                    cmap=cm.get_cmap('RdYlBu'), legend='reverse')
 plt.xlabel('Datum')
 plt.ylabel('Leistung in  GW')
-plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.55)
+plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.65)
 plt.tight_layout()
 plt.show()
 
@@ -230,11 +246,21 @@ annual_production = annual_production.transpose()
 
 # real production 2014
 #http://www.bmwi.de/DE/Themen/Energie/Strommarkt-der-Zukunft/zahlen-fakten.html
-real_2014 = pd.DataFrame([[43.3, 19.6, 97.1, 155.8, 118.6, 61.1, 5.7, 27.3,
-                           36.1, 57.4]],
-                         columns=annual_production.columns)
-annual_production = annual_production.append(real_2014, ignore_index=True)
-annual_production.index = ['Modell', 'Real']
+DE2014 = pd.DataFrame([[36.8, 24.098, 91.799, 148.769, 114.824, 37.227, 1.434,
+                        0.111, 34.961, 55.484]],
+                      columns=annual_production.columns)
+
+AT2014 = pd.DataFrame([[2.504, 40.902, 0, 0, 2.953, 5.161, 0.597, 4.52,
+                        0.351, 3.640]],
+                      columns=annual_production.columns)
+LU2014 = pd.DataFrame([[0.05, 0.091, 0, 0, 0, 1.42, 0,
+                        0, 0.79, 0.61]],
+                      columns=annual_production.columns)
+
+annual_production = annual_production.append([DE2014, AT2014, LU2014],
+                                             ignore_index=True)
+annual_production.index = ['DE/AT/LU (Modell)', 'DE (Real)', 'AT (Real)',
+                           'LU (Real)']
 
 annual_production = annual_production[
     ['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl', 'Sonstiges',
@@ -256,6 +282,7 @@ curves[['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl',
         'Import', 'Export']].plot(cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
+plt.xlim(0, 10000)
 plt.tight_layout()
 plt.show()
 
