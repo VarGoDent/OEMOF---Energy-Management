@@ -728,31 +728,29 @@ plt.show()
 # %% comparison of prices for sensitivities
 
 files = {
-    'nep_2014_base':
-        'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv',
-    'nep_2025_base':
+    'NEP-2025':
         'scenario_nep_2025_2016-08-16 14:52:22.118405_DE.csv',
-    'nep_2035_base':
+    'NEP-2035':
         'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv',
-    'nep_2035_ee_plus_25':
+    'NEP-2035-ee+25':
         'scenario_nep_2035_ee_plus_25_2016-08-09 16:27:06.904477_DE.csv',
-    'nep_2035_ee_minus_25':
+    'NEP-2035-ee-25':
         'scenario_nep_2035_ee_minus_25_2016-08-09 16:45:40.295183_DE.csv',
-    'nep_2035_demand_plus_25':
+    'NEP-2035-demand+25':
         'scenario_nep_2035_demand_plus_25_2016-08-10 09:38:10.628613_DE.csv',
-    'nep_2035_demand_minus_25':
+    'NEP-2035-demand-25':
         'scenario_nep_2035_demand_minus_25_2016-08-10 09:50:48.953929_DE.csv',
-    'nep_2035_fuel_plus_25':
+    'NEP-2035-fuel+25':
         'scenario_nep_2035_fuel_plus_25_2016-08-10 12:10:08.246319_DE.csv',
-    'nep_2035_fuel_minus_25':
+    'NEP-2035-fuel-25':
         'scenario_nep_2035_fuel_minus_25_2016-08-10 12:20:30.690439_DE.csv',
-    'nep_2035_co2_plus_25':
+    'NEP-2035-co2+25':
         'scenario_nep_2035_co2_plus_25_2016-08-10 12:37:36.981611_DE.csv',
-    'nep_2035_co2_minus_25':
+    'NEP-2035-co2-25':
         'scenario_nep_2035_co2_minus_25_2016-08-10 12:49:50.740375_DE.csv',
-    'nep_2035_nordlink_plus_25':
+    'NEP-2035-nordlink+25':
         'scenario_nep_2035_nordlink_plus_25_2016-08-10 13:00:08.919877_DE.csv',
-    'nep_2035_nordlink_minus_25':
+    'NEP-2035-nordlink-25':
         'scenario_nep_2035_nordlink_minus_25_2016-08-10 13:10:34.528303_DE.csv'
 }
 
@@ -784,13 +782,7 @@ plt.tight_layout()
 plt.show()
 
 # histogram
-df_prices[['nep_2014_base', 'nep_2035_demand_minus_25',
-           'nep_2025_base', 'nep_2035_demand_plus_25',
-           'nep_2035_base', 'nep_2035_co2_minus_25',
-           'nep_2035_ee_minus_25', 'nep_2035_co2_plus_25',
-           'nep_2035_ee_plus_25', 'nep_2035_nordlink_minus_25',
-           'nep_2035_fuel_minus_25', 'nep_2035_nordlink_plus_25',
-           'nep_2035_fuel_plus_25']] \
+df_prices \
     .plot(kind='hist', bins=25, normed=True, subplots=True, sharex=True,
           sharey=True, layout=(7, 2), cmap=cm.get_cmap('RdYlBu'))
 [ax.legend(loc='upper right') for ax in plt.gcf().axes]
@@ -808,8 +800,8 @@ plt.tight_layout()
 plt.show()
 
 # duration curves for base scenarios
-df_prices_duration[['nep_2014_base', 'nep_2025_base',
-                    'nep_2035_base']].plot(legend='reverse',
+df_prices_duration[['NEP-2025',
+                    'NEP-2035']].plot(legend='reverse',
                                            cmap=cm.get_cmap('RdYlBu'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
