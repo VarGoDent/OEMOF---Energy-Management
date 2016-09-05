@@ -1,7 +1,9 @@
+renpassG!S
+==========
 renpassG!S is an easy-to-use application designed to model energy systems.
 
 .. contents:: `Table of contents`
-    :depth: 1
+    :depth: 2
     :local:
     :backlinks: top
 .. sectnum::
@@ -9,22 +11,14 @@ renpassG!S is an easy-to-use application designed to model energy systems.
 Introduction
 ============
 
-renpassG!S is developed and maintained at the Center for Sustainable Energy Systems (Zentrum für nachhaltige Energysysteme (ZNES)) in Flensburg. The application is closely linked to the Open-Energy-Modeling-Framework. An energy system represented as a bipartite graph of 
-
-
-Energy system scenarios are defined using two CSV files.  
-
-
-variable cost fix cost
-planning perspective
-minimizing cost
-
-
+renpassG!S is developed and maintained at the Center for Sustainable Energy Systems (Zentrum für nachhaltige Energysysteme (ZNES)) in Flensburg. The application is closely linked to the Open-Energy-Modeling-Framework (oemof). renpassG!S, an application of the broad functionality of oemof provides easy-to-understand energy system scenarios for Europe in a CSV format, optimizing the power plant dispatch for minimum cost and exports results of the optimization process.
 
 Scenario Data
 =============
 
-Status Quo 2014
+Based on the NEP 2014 scenario sources of parameters of other scenarios are only included if parameters have changed.
+
+NEP 2014
 ---------------
 
 Regions
@@ -35,7 +29,7 @@ AT, BE, CH, CZ, DE, DK, FR, LU, NL, NO, PL, SE
 Fuel prices & CO2 costs
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-European Countries 
+European Countries
 ~~~~~~~~~~~~~~~~~~
 
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
@@ -43,27 +37,27 @@ European Countries
 +============+=============================+===============+==================+===========+=======================================+
 |gas         |6.71                         |BMU-DLR2012_   |0.0559            |UBA2015_   | 24.486369                             |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
-|hard_coal   |3.61                         |"              |0.0934            |          "| 13.547994                             |
+|hard_coal   |3.61                         |Ibid.          |0.0934            |Ibid.      | 13.547994                             |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
-|oil         |12.24                        |"              |0.0733            |          "| 44.497203                             |
+|oil         |12.24                        |Ibid.          |0.0733            |Ibid.      | 44.497203                             |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
-|waste       |1.86                         |"              |0.0917            |IPCC2006_  | 12.78                                 |
+|waste       |1.86                         |Ibid.          |0.0917            |IPCC2006_  | 12.78                                 |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
 |biomass     |5.56                         |PROGNOS2013_   |0.0020            |DEFRA2012_ | 20.02782                              |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
 |lignite     |1.15                         |ISI2011_       |0.1051            |UBA2015_   | 4.761141                              |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
-|uranium     |1.11                         |"              |0.0088            |OEKO2007_  | 4.048008                              |
+|uranium     |1.11                         |Ibid.          |0.0088            |OEKO2007_  | 4.048008                              |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
 |mixed_fuels |1.86                         |nan            |0.0917            |nan        | 7.237947                              |
 +------------+-----------------------------+---------------+------------------+-----------+---------------------------------------+
 
-with CO2 price = 18.43 €2014/t (BMU-DLR2012_) (Anmerkung Cord: VIEL ZU HOCH! Für 2014 lag der Wert laut EEX-Daten im Durchschnitt bei 5.91 EUR/tCO2. Ich habe die Preise in der o. g. Tabelle dahingehend aktualisiert)
+with CO2 price = 5.91 EUR/tCO2 (EEX)
 with 3.6 GJ ~ 1 MWh
 
-Manipulations: 
-* BMU-DLR2012_: Linear interpolated in the timeframe from 2010 to 2015, inflation - adjusted 
-* mixed fuels same values as waste
+Manipulations:
+- BMU-DLR2012_: Linear interpolated in the timeframe from 2010 to 2015, inflation - adjusted
+- mixed fuels same values as waste
 
 Variable costs
 ~~~~~~~~~~~~~~
@@ -71,21 +65,21 @@ Variable costs
 +-----------+----------+---------------+
 |Type       | €/MWh    |Source         |
 +===========+==========+===============+
-|gas        | 2.0      |IER2010_       |
+|gas        | 2.0      | IER2010_      |
 +-----------+----------+---------------+
-|hard_coal  | 4.0      |"              |
+|hard_coal  | 4.0      | Ibid.         |
 +-----------+----------+---------------+
-|oil        | 1.5      |DIW2013_       |
+|oil        | 1.5      | DIW2013_      |
 +-----------+----------+---------------+
-|waste      | 23.0     |Energynet2012_ |
+|waste      | 23.0     | Energynet2012_|
 +-----------+----------+---------------+
-|biomass    | 3.9      |"              |
+|biomass    | 3.9      | Ibid.         |
 +-----------+----------+---------------+
-|lignite    | 4.4      |IER2010_       |
+|lignite    | 4.4      | IER2010_      |
 +-----------+----------+---------------+
-|uranium    | 0.5      |"              |
+|uranium    | 0.5      | Ibid.         |
 +-----------+----------+---------------+
-|mixed_fuels| 23.0     |nan            |
+|mixed_fuels| 23.0     | nan           |
 +-----------+----------+---------------+
 
 Fixed costs
@@ -94,21 +88,21 @@ Fixed costs
 +-----------+----------+---------------+
 |Type       | €/MW     | Source        |
 +===========+==========+===============+
-|gas        | 19,000   |IER2010_       |
+|gas        | 19,000   | IER2010_      |
 +-----------+----------+---------------+
-|hard_coal  | 35,000   |"              |
+|hard_coal  | 35,000   | Ibid.         |
 +-----------+----------+---------------+
-|oil        |  6,000   |DIW2013_       |
+|oil        |  6,000   | DIW2013_      |
 +-----------+----------+---------------+
-|waste      | 16,500   |Energynet2012_ |
+|waste      | 16,500   | Energynet2012_|
 +-----------+----------+---------------+
-|biomass    | 29,000   |"              |
+|biomass    | 29,000   | Ibid.         |
 +-----------+----------+---------------+
-|lignite    | 39,000   |IER2010_       |
+|lignite    | 39,000   | IER2010_      |
 +-----------+----------+---------------+
-|uranium    | 55,000   |"              |
+|uranium    | 55,000   | Ibid.         |
 +-----------+----------+---------------+
-|mixed_fuels| 16,500   |nan            |
+|mixed_fuels| 16,500   | nan           |
 +-----------+----------+---------------+
 
 Efficiencies
@@ -119,83 +113,157 @@ Efficiencies
 +===========+=======+================+
 |gas        | 47.1  |ECOFYS2014_     |
 +-----------+-------+----------------+
-|hard_coal  | 38.5  | "              |
+|hard_coal  | 38.5  | Ibid.          |
 +-----------+-------+----------------+
-|oil        | 36.8  |"               |
+|oil        | 36.8  | Ibid.          |
 +-----------+-------+----------------+
-|waste      | 26.0  |own assumption  |
+|waste      | 26.0  | own assumption |
 +-----------+-------+----------------+
-|biomass    | 38.0  |own assumption  |
+|biomass    | 38.0  | own assumption |
 +-----------+-------+----------------+
 |lignite    | 36.0  | own assumption |
 +-----------+-------+----------------+
-|uranium    | 36.0  |IER2010_        |
+|uranium    | 36.0  | IER2010_       |
 +-----------+-------+----------------+
-|mixed_fuels| 26.0  |nan             |
+|mixed_fuels| 26.0  | nan            |
 +-----------+-------+----------------+
 
-* Mixed fuels same values as waste
+- Mixed fuels same values as waste
 
 Installed capacities
 ~~~~~~~~~~~~~~~~~~~~
 
-Source: "140602_SOAF 2014_dataset.zip ":http://vernetzen.uni-flensburg.de/redmine/attachments/download/850/140602_SOAF%202014_dataset.zip
-Description: 19:00pm values, Scenario B (Best estimate) based on the expectations of the TSO, See "Source". Original Data has been provided by ENTSO-E.
-Year: 2014
-Manipulations: None
-
-Detailed Scenario
-~~~~~~~~~~~~~~~~~
-
-OPSD BNetzA list of power plants...
+- Source: ENTSOE2014a_
+- Description: 19:00pm values, Scenario B (Best estimate) based on the expectations of the TSO, See "Source". Original Data has been provided by ENTSO-E.
+- Year: 2014
+- Manipulations: None
 
 Demand
 ~~~~~~
 
-Source: http://data.open-power-system-data.org/datapackage_timeseries/
-Description: See "Source". Original Data has been provided by ENTSO-E.
-Year: 2014
-Manipulations: Normalised by dividing the values of the respective country by their annual maximum.
+- Source: http://data.open-power-system-data.org/datapackage_timeseries/
+- Description: See "Source". Original Data has been provided by ENTSO-E.
+- Year: 2014
+- Manipulations: Normalised by dividing the values of the respective country by their annual maximum.
 
 Transshipment - Net Transfer Capacities (NTC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Source: "Electricity Without Borders - The need for cross-border transmission investment in Europe":http://ses.jrc.ec.europa.eu/sites/ses.jrc.ec.europa.eu/files/documents/thesis_brancucci_electricity_without_borders.pdf (p.149 ff)
-Description: See "Source". Original Data has been provided by ENTSO-E (NTC Matrix)
-Year: 2010
-Manipulations: None
+- Source: MARTINEZ-ANIDO2013_, p.149 ff
+- Description: See "Source". Original Data has been provided by ENTSO-E (NTC Matrix)
+- Year: 2010
+- Manipulations: None
 
 Wind Timeseries
 ~~~~~~~~~~~~~~~
 
-Source: https://beta.renewables.ninja/downloads
-Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA.
-Year: 2014
-Manipulations: None
+- Source: https://beta.renewables.ninja/downloads
+- Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA.
+- Year: 2014
+- Manipulations: None
 
 Solar Timeseries
 ~~~~~~~~~~~~~~~~
 
-Source: https://beta.renewables.ninja/downloads
-Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA-2.
-Year: 2014
-Manipulations: None
+- Source: https://beta.renewables.ninja/downloads
+- Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA-2.
+- Year: 2014
+- Manipulations: None
+
+NEP 2025
+--------
+
+Fuel prices & CO2 costs
+~~~~~~~~~~~~~~~~~~~~~~~
+
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+|Fuel            | Original        | Fuel price €/GJ   | Source                |Fuel price €/MWh       |Emission tCO2/GJ  |Fuel price including CO2 cost €/MWh  |
++================+=================+===================+=======================+=======================+==================+=====================================+
+| hard_coal      | 83.50 €/t SKE   | 2.849             | NEP2015_, p. 32       | 10.256                | 0.0934           | 17.32                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| lignite        | 1.50 €/MWh th   | 0.4167            | NEP2015_, p. 32       | 1.50                  | 0.1051           | 9.45                                |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| gas            | 3.19 Cent/kWh   | 8.861             | NEP2015_, p. 32       | 31.90                 | 0.0559           | 36.13                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| oil            | 116.00 $/bbl    | 14.89             | NEP2015_, p. 32       | 53.60                 | 0.0733           | 59.15                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| waste          |                 | 1.86              | IRENA2015_, p.125     | 6.69                  | 0.0917           | 13.63                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| mixed_fuels    |                 | 1.86              | IRENA2015_, p.125     | 6.69                  | 0.0917           | 13.63                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| biomass        |                 | 7.58              | PROGNOS2013_, p. 31   | 27.28                 | 0.0020           | 27.44                               |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+| uranium        |                 | 1.11              | ISI2011_, p.94        | 3.99                  | 0.0088           | 4.66                                |
++----------------+-----------------+-------------------+-----------------------+-----------------------+------------------+-------------------------------------+
+
+with CO2 price = 21.00 €/t  NEP2015_, p. 32
+
+Calculation factors:
+
++-------+---------------+---------------+-----------+------------+
+|1      |GJ             |0.0341208424   |t SKE      |            |
++-------+---------------+---------------+-----------+------------+
+|1      |t SKE          |29.3076        |GJ         |            |
++-------+---------------+---------------+-----------+------------+
+|1      |EURO_2014      |1.3285         |US $ _ 2014|Bundesbank_ |
++-------+---------------+---------------+-----------+------------+
+|1      |Mwh            |3.6            |GJ         |            |
++-------+---------------+---------------+-----------+------------+
+|1      |bbl            |5.86152        |GJ         |            |
++-------+---------------+---------------+-----------+------------+
+
+NEP 2035 B2 Scenario
+--------------------
+
+Fuel prices & CO2 costs
+~~~~~~~~~~~~~~~~~~~~~~~
+
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|Fuel            |Original         |Fuel price €/GJ  |Source                 |Fuel price €/MWh       |Emission tCO2/GJ  |Fuel price including CO2 cost €/MWh|
++================+=================+=================+=======================+=======================+==================+===================================+
+|hard_coal       |84.27 €/t SKE    |2.88             |  NEP2015_, p.32       |10.35                  |0.0934            |20.79                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|lignite         |1.50 €/MWh th    |0.42             |  NEP2015_, p.32       |1.5                    |0.1051            |13.24                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|gas             |3.37 Cent/kWh    |9.36             |  NEP2015_, p.32       |33.7                   |0.0559            |39.93                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|oil             |128.00 $/bbl     |16.44            |  NEP2015_, p.32       |59.18                  |0.0733            |67.36                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|waste           |                 |1.86             |  IRENA2015_, p.125    |6.69                   |0.0917            |16.92                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|mixed_fuels     |                 |1.86             |  IRENA2015_, p.125    |6.69                   |0.0917            |16.92                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|biomass         |                 |7.58             |  PROGNOS2013_, p. 31  |27.28                  |0.0020            |27.51                              |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+|uranium         |                 |1.11             |  ISI2011_, p.94       |3.99                   |0.0088            |4.98                               |
++----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
+
+with CO2 price = 31.00 €/t  NEP2015_, p. 32
+
+Installed capacities
+~~~~~~~~~~~~~~~~~~~~
+
+- Source: ENTSOE2014a_
+- Description: 19:00pm values, Version 3 based on the EU longterm goals, See "Source". Original Data has been provided by ENTSO-E.
+- Year: 2030 values assumed for  2035
+- Manipulations: None
+
+Transshipment - Net Transfer Capacities (NTC)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Source: ENTSOE2014b_
+- Description:
+- Year: 2030
+- Manipulations: None
 
 
-Sources
-~~~~~~~
+..* "BMWI Energie Daten - Factors, Sheet 0.2 and 0.3":https://www.bmwi.de/BMWi/Redaktion/Binaer/energie-daten-gesamt,property=blob,bereich=bmwi2012,sprache=de,rwb=true.xls
+..* "DIW2013":https://www.diw.de/documents/publikationen/73/diw_01.c.424566.de/diw_datadoc_2013-068.pdf
 
-* BMU-DLR2012_
-* ISI2011_
-* IPCC2006_
-* DEFRA2012_
-* OEKO2007_
-* PROGNOS2013_
-* ECOFYS2014_
-* IER2010_
-* DIW2013_
-* Energynet2012_
 
+
+
+.. _MARTINEZ-ANIDO2013 : http://ses.jrc.ec.europa.eu/sites/ses.jrc.ec.europa.eu/files/documents/thesis_brancucci_electricity_without_borders.pdf
 .. _ISI2011: http://www.isi.fraunhofer.de/isi-wAssets/docs/x/de/publikationen/Final_Report_EU-Long-term-scenarios-2050_FINAL.pdf
 .. _UBA2015: https://www.umweltbundesamt.de/themen/klima-energie/treibhausgas-emissionen
 .. _IPCC2006: http://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/2_Volume2/V2_2_Ch2_Stationary_Combustion.pdf
@@ -207,179 +275,9 @@ Sources
 .. _DIW2013: https://www.diw.de/documents/publikationen/73/diw_01.c.424566.de/diw_datadoc_2013-068.pdf
 .. _Energynet2012: https://www.energinet.dk/SiteCollectionDocuments/Danske%20dokumenter/Forskning/Technology_data_for_energy_plants.pdf
 .. _BMU-DLR2012: http://www.dlr.de/dlr/Portaldata/1/Resources/bilder/portal/portal_2012_1/leitstudie2011_bf.pdf
-h1. NEP 2035 B2 Scenario
+.. _NEP2015: http://www.netzentwicklungsplan.de/NEP_2025_1_Entwurf_Kap_1_bis_3.pdf
+.. _IRENA2015: http://www.irena.org/DocumentDownloads/Publications/IRENA_REmap_Germany_report_2015.pdf
+.. _ENTSOE2014a: https://www.entsoe.eu/Documents/SDC%20documents/SOAF/140602_SOAF%202014_dataset.zip
+.. _ENTSOE2014b: https://www.entsoe.eu/major-projects/ten-year-network-development-plan/maps-and-data/Pages/default.aspx
+.. _Bundesbank: https://www.bundesbank.de/Redaktion/DE/Downloads/Statistiken/Aussenwirtschaft/Devisen_Euro_Referenzkurs/stat_eurefd.pdf?__blob=publicationFile
 
-
-
-h2. Regions
-
-AT, BE, CH, CZ, DE, DK, FR, LU, NL, NO, PL, SE
-
-
-h2. Fuel prices & CO2 costs
-
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|Fuel            |Original         |Fuel price €/GJ  |Source                 |Fuel price €/MWh       |Emission tCO2/GJ  |Fuel price including CO2 cost €/MWh|
-+================+=================+=================+=======================+=======================+==================+===================================+
-|hard_coal       |84.27 €/t SKE    |2.88             |  NEP 2015, p. 32      |10.35                  |0.0934            |20.79                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|lignite         |1.50 €/MWh th    |0.42             |  NEP 2015, p. 32      |1.5                    |0.1051            |13.24                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|gas             |3.37 Cent/kWh    |9.36             |  NEP 2015, p. 32      |33.7                   |0.0559            |39.93                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|oil             |128.00 $/bbl     |16.44            |  NEP 2015, p. 32      |59.18                  |0.0733            |67.36                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|waste           |                 |1.86             |  IRENA 2015, p.125    |6.69                   |0.0917            |16.92                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|mixed_fuels     |                 |1.86             |  IRENA 2015, p.125    |6.69                   |0.0917            |16.92                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|biomass         |                 |7.58             |  PROGNOS 2013, p. 31  |27.28                  |0.0020            |27.51                              |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-|uranium         |                 |1.11             |  ISI 2011, p.94       |3.99                   |0.0088            |4.98                               |
-+----------------+-----------------+-----------------+-----------------------+-----------------------+------------------+-----------------------------------+
-
-with CO2 price = 31,00 €/t  (NEP 2015, S. 32)
-
-Calculation factors:
-
-+-------+---------------+---------------+-----------+
-|1      |GJ             |0,0341208424   |t SKE      |
-+=======+===============+===============+===========+
-|1      |EURO_2014      |1,3285         |US $ _ 2014|
-+-------+---------------+---------------+-----------+
-|1      |Mwh            |3,6            |GJ         |
-+-------+---------------+---------------+-----------+
-|1      |bbl            |5,86152        |GJ         |
-+-------+---------------+---------------+-----------+
-
-h2. Variable costs
-
-+-----------+------+------------+
-|Type       | €/MWh|Source      |
-+===========+======+============+
-|gas        |      |            |
-+-----------+------+------------+
-|hard_coal  |      |            |
-+-----------+------+------------+
-|oil        |      |            |
-+-----------+------+------------+
-|waste      |      |            |
-+-----------+------+------------+
-|biomass    |      |            |
-+-----------+------+------------+
-|lignite    |      |            |
-+-----------+------+------------+
-|uranium    |      |            |
-+-----------+------+------------+
-|mixed_fuels|      |            |
-+-----------+------+------------+
-
-h2. Fixed costs
-
-+-----------+----------+---------------+
-|Type       | €/MW     | Source        |
-+===========+==========+===============+
-|gas        |          |               |
-+-----------+----------+---------------+
-|hard_coal  |          |               |
-+-----------+----------+---------------+
-|oil        |          |               |
-+-----------+----------+---------------+
-|waste      |          |               |
-+-----------+----------+---------------+
-|biomass    |          |               |
-+-----------+----------+---------------+
-|lignite    |          |               |
-+-----------+----------+---------------+
-|uranium    |          |               |
-+-----------+----------+---------------+
-|mixed_fuels|          |               |
-+-----------+----------+---------------+
-
-h2. Efficiencies
-
-+-----------+-------+---------+
-|Type       |  eta  |   Source|
-+===========+=======+=========+
-|gas        |       |         |
-+-----------+-------+---------+
-|hard_coal  |       |         |
-+-----------+-------+---------+
-|oil        |       |         |
-+-----------+-------+---------+
-|waste      |       |         |
-+-----------+-------+---------+
-|biomass    |       |         |
-+-----------+-------+---------+
-|lignite    |       |         |
-+-----------+-------+---------+
-|uranium    |33.8|DIW2013 p.79|
-+-----------+----+------------+
-|mixed_fuels|       |         |
-+-----------+-------+---------+
-
-
-Further Information:
-
-* "DIW 2013- Current and Prospective Costs of Electricity Generation until 2050":https://www.diw.de/documents/publikationen/73/diw_01.c.424566.de/diw_datadoc_2013-068.pdf
-
-
-h2. Installed capacities
-
-
-h3. European Countries
-
-Source: "140602_SOAF 2014_dataset.zip ":http://vernetzen.uni-flensburg.de/redmine/attachments/download/850/140602_SOAF%202014_dataset.zip
-Description: 19:00pm values, Version 3 based on the EU longterm goals, See "Source". Original Data has been provided by ENTSO-E. "Documentation":https://www.entsoe.eu/Documents/TYNDP%20documents/TYNDP%202014/140602_SOAF%202014-2030.pdf and "NEP 2015 p.49":http://www.netzentwicklungsplan.de/_NEP_file_transfer/NEP_2025_1_Entwurf_Kap_1_bis_3.pdf
-Year: 2030 used for 2035
-Manipulations: None
-
-h3. Germany
-
-* Scenario B2 -2035 (NEP 2015 p. 29)
-* "NEP2015 KW-Liste":http://vernetzen.uni-flensburg.de/redmine/attachments/download/979/nep_2015_kraftwerksliste_entwurf_140430.ods
-
-h2. Demand
-
-Source: http://data.open-power-system-data.org/datapackage_timeseries/
-Description: See "Source". Original Data has been provided by ENTSO-E.
-Year: 2011
-Manipulations: Normalised by dividing the values of the respective country by their annual maximum.
-
-h2. Transshipment - Net Transfer Capacities (NTC)
-
-Source: "ENTSO-E TYNDP 2014 market modelling data":https://www.entsoe.eu/major-projects/ten-year-network-development-plan/maps-and-data/Pages/default.aspx ref. transmission capacities
-Description: 
-Year: 2030
-Manipulations: None
-
-h2. Wind Timeseries
-
-Source: https://beta.renewables.ninja/downloads
-Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA.
-Year: 2011
-Manipulations: None
-
-h2. Solar Timeseries
-
-Source: https://beta.renewables.ninja/downloads
-Description: See "Source" and respective journal articles on the dataset. Original Data has been provided by MERRA-2.
-Year: 2011
-Manipulations: None
-
-
-h2. Sources
-
-* "BMU-DLR2012":http://www.dlr.de/dlr/Portaldata/1/Resources/bilder/portal/portal_2012_1/leitstudie2011_bf.pdf
-* "ISI2011":http://www.isi.fraunhofer.de/isi-wAssets/docs/x/de/publikationen/Final_Report_EU-Long-term-scenarios-2050_FINAL.pdf
-* "UBA2015":https://www.umweltbundesamt.de/themen/klima-energie/treibhausgas-emissionen
-* "IPCC2006":http://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/2_Volume2/V2_2_Ch2_Stationary_Combustion.pdf
-* "DEFRA2012":https://www.gov.uk/government/uploads/system/uploads/attachment_data/file/69554/pb13773-ghg-conversion-factors-2012.pdf
-* "OEKO2007":http://www.oeko.de/oekodoc/318/2007-008-de.pdf
-* "NEP 2015, S. 32":http://www.netzentwicklungsplan.de/NEP_2025_1_Entwurf_Kap_1_bis_3.pdf 
-* "IRENA 2015, S. 125":http://www.irena.org/DocumentDownloads/Publications/IRENA_REmap_Germany_report_2015.pdf 
-* "PROGNOS 2013, S.31":http://www.prognos.com/uploads/tx_atwpubdb/131010_Prognos_Belectric_Studie_Freiflaechen_Solarkraftwerke_02.pdf 
-* "ISI 2011, S.93":http://www.isi.fraunhofer.de/isi-wAssets/docs/x/de/publikationen/Final_Report_EU-Long-term-scenarios-2050_FINAL.pdf 
-* "Bundesbank $ to €":https://www.bundesbank.de/Redaktion/DE/Downloads/Statistiken/Aussenwirtschaft/Devisen_Euro_Referenzkurs/stat_eurefd.pdf?__blob=publicationFile 
-* "BMWI Energie Daten - Factors, Sheet 0.2 and 0.3":https://www.bmwi.de/BMWi/Redaktion/Binaer/energie-daten-gesamt,property=blob,bereich=bmwi2012,sprache=de,rwb=true.xls
-* "DIW2013":https://www.diw.de/documents/publikationen/73/diw_01.c.424566.de/diw_datadoc_2013-068.pdf
