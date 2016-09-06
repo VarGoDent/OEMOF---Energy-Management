@@ -1,6 +1,3 @@
-renpassG!S
-==========
-renpassG!S is an easy-to-use application designed to model energy systems.
 
 .. contents:: `Table of contents`
     :depth: 2
@@ -11,7 +8,7 @@ renpassG!S is an easy-to-use application designed to model energy systems.
 Introduction
 ============
 
-renpassG!S is developed and maintained at the Center for Sustainable Energy Systems (Zentrum für nachhaltige Energysysteme (ZNES)) in Flensburg. The application is closely linked to the Open-Energy-Modeling-Framework (oemof). renpassG!S, an application of the broad functionality of oemof provides easy-to-understand energy system scenarios for Europe in a CSV format, optimizing the power plant dispatch for minimum cost and exports results of the optimization process.
+renpassG!S is an easy-to-use application designed to model energy systems, which is developed and maintained at the Center for Sustainable Energy Systems (Zentrum für nachhaltige Energysysteme (ZNES)) in Flensburg. The application is closely linked to the Open-Energy-Modeling-Framework (oemof). renpassG!S, an application of the broad functionality of oemof provides easy-to-understand energy system scenarios for Europe in a CSV format, optimizing the power plant dispatch for minimum cost and exports results of the optimization process.
 
 Scenario Data
 =============
@@ -111,21 +108,21 @@ Efficiencies
 +-----------+-------+----------------+
 |Type       |eta    |Source          |
 +===========+=======+================+
-|gas        | 47.1  |ECOFYS2014_     |
+|gas        | 42.5  |ENTSOE2014c     |
 +-----------+-------+----------------+
-|hard_coal  | 38.5  | Ibid.          |
+|hard_coal  | 38.0  | Ibid.          |
 +-----------+-------+----------------+
-|oil        | 36.8  | Ibid.          |
+|oil        | 34.0  | Ibid.          |
 +-----------+-------+----------------+
-|waste      | 26.0  | own assumption |
+|waste      | 26.0  | Ibid.          |
 +-----------+-------+----------------+
-|biomass    | 38.0  | own assumption |
+|biomass    | 38.0  | Ibid.          |
 +-----------+-------+----------------+
-|lignite    | 36.0  | own assumption |
+|lignite    | 38.0  | Ibid.          |
 +-----------+-------+----------------+
-|uranium    | 36.0  | IER2010_       |
+|uranium    | 32.5  | Ibid.          |
 +-----------+-------+----------------+
-|mixed_fuels| 26.0  | nan            |
+|mixed_fuels| 26.0  | Ibid.          |
 +-----------+-------+----------------+
 
 - Mixed fuels same values as waste
@@ -279,5 +276,6 @@ Transshipment - Net Transfer Capacities (NTC)
 .. _IRENA2015: http://www.irena.org/DocumentDownloads/Publications/IRENA_REmap_Germany_report_2015.pdf
 .. _ENTSOE2014a: https://www.entsoe.eu/Documents/SDC%20documents/SOAF/140602_SOAF%202014_dataset.zip
 .. _ENTSOE2014b: https://www.entsoe.eu/major-projects/ten-year-network-development-plan/maps-and-data/Pages/default.aspx
+.. _ENTSOE2014c: https://www.entsoe.eu/major-projects/ten-year-network-development-plan/tyndp-2014/Documents/TYNDP2014%20market%20modelling%20data.xlsx
 .. _Bundesbank: https://www.bundesbank.de/Redaktion/DE/Downloads/Statistiken/Aussenwirtschaft/Devisen_Euro_Referenzkurs/stat_eurefd.pdf?__blob=publicationFile
 
