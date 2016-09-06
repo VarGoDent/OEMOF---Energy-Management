@@ -125,6 +125,7 @@ Efficiencies
 |mixed_fuels| 26.0  | Ibid.          |
 +-----------+-------+----------------+
 
+- Based on efficiency classes provided by ENTSOE2014c_ average values are assumed
 - Mixed fuels same values as waste
 
 Installed capacities
