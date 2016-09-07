@@ -10,14 +10,14 @@ from matplotlib import cm
 # global plotting options
 plt.rcParams.update(plt.rcParamsDefault)
 matplotlib.style.use('ggplot')
-plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['lines.linewidth'] = 3
 plt.rcParams['axes.facecolor'] = 'silver'
 plt.rcParams['xtick.color'] = 'k'
 plt.rcParams['ytick.color'] = 'k'
 plt.rcParams['text.color'] = 'k'
 plt.rcParams['axes.labelcolor'] = 'k'
-plt.rcParams.update({'font.size': 14})
-plt.rcParams['image.cmap'] = 'RdYlBu'
+plt.rcParams.update({'font.size': 22})
+plt.rcParams['image.cmap'] = 'Spectral'
 
 # read file
 file = ('results/'
@@ -43,7 +43,7 @@ df = pd.concat([price_real, df], axis=1)
 df.columns = ['Real', 'Modell']
 
 # line plot
-df.plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+df.plot(drawstyle='steps', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Zeit in h')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -77,7 +77,7 @@ df_prices_duration = pd.concat(
      for col in df], axis=1)
 df_prices_duration[['Real',
                    'Modell']].plot(legend='reverse',
-                                   cmap=cm.get_cmap('RdYlBu'))
+                                   cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -97,7 +97,7 @@ price_real.index = df.index
 df = pd.concat([price_real, df], axis=1)
 df.columns = ['Real', 'Modell']
 
-df[(24 * 7)*8:(24 * 7)*16].plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+df[(24 * 7)*8:(24 * 7)*16].plot(drawstyle='steps', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -118,7 +118,7 @@ price_real.index = df.index
 df = pd.concat([price_real, df], axis=1)
 df.columns = ['Real', 'Modell']
 
-df[(24 * 7)*21:(24 * 7)*22].plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+df[(24 * 7)*21:(24 * 7)*22].plot(drawstyle='steps', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -233,7 +233,7 @@ cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
         'Pumpspeicher (Entladen)', 'Import']
 df_dispatch['2014-01-21':'2014-01-27'][cols] \
              .plot(kind='area', stacked=True,
-                   cmap=cm.get_cmap('RdYlBu'), legend='reverse')
+                   cmap=cm.get_cmap('Spectral'), legend='reverse')
 plt.xlabel('Datum')
 plt.ylabel('Leistung in  GW')
 plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.65)
@@ -268,7 +268,7 @@ annual_production = annual_production[
     ['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl', 'Sonstiges',
      'Solar', 'Wind', 'Biomasse', 'Laufwasser']]
 
-annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('RdYlBu'),
+annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('Spectral'),
                        rot=0)
 plt.xlabel('')
 plt.ylabel('Energieproduktion in  TWh')
@@ -281,7 +281,7 @@ curves = pd.concat(
      for col in df_dispatch], axis=1)
 curves[['Kernenergie', 'Braunkohle', 'Steinkohle', 'Gas', 'Öl',
         'Sonstiges', 'Solar', 'Wind', 'Pumpspeicher (Entladen)',
-        'Import', 'Export']].plot(cmap=cm.get_cmap('RdYlBu'))
+        'Import', 'Export']].plot(cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
 plt.xlim(0, 10000)
@@ -301,7 +301,7 @@ pls = pls[[
     'DK_DE', 'FR_DE', 'NL_DE',
     'PL_DE', 'SE_DE']]
 
-pls.plot(cmap=cm.get_cmap('RdYlBu'))
+pls.plot(cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
 plt.xlim(0, 10000)
@@ -323,7 +323,7 @@ pls_sum_div = pls_sum_div[[
     'DK_DE', 'FR_DE', 'NL_DE',
     'PL_DE', 'SE_DE']]
 
-pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('RdYlBu'), rot=0,
+pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'), rot=0,
                  legend='reverse')
 plt.xlabel('')
 plt.ylabel('Energie in TWh')
@@ -497,7 +497,7 @@ annual_production_2025 = annual_production_2025[
      'Solar', 'Wind', 'Biomasse', 'Laufwasser']]
 
 annual_production_2025.plot(kind='bar', legend=True,
-                            cmap=cm.get_cmap('RdYlBu'),
+                            cmap=cm.get_cmap('Spectral'),
                             rot=0)
 plt.xlabel('')
 plt.ylabel('Energieproduktion in  TWh')
@@ -585,7 +585,7 @@ pls = pls[[
     'DK_DE', 'FR_DE', 'NL_DE', 'NO_DE',
     'PL_DE', 'SE_DE']]
 
-pls[['NO_DE', 'DE_NO']].plot(cmap=cm.get_cmap('RdYlBu'))
+pls[['NO_DE', 'DE_NO']].plot(cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
 plt.xlim(0, 10000)
@@ -608,7 +608,7 @@ pls_sum_div = pls_sum_div[[
     'DK_DE', 'FR_DE', 'NL_DE', 'NO_DE',
     'PL_DE', 'SE_DE']]
 
-pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('Paired'), rot=0,
+pls_sum_div.plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'), rot=0,
                  legend='reverse')
 plt.xlabel('')
 plt.ylabel('Energie in TWh')
@@ -629,7 +629,7 @@ cable = pd.concat(
      for col in cable], axis=1)
 cable = cable.rename(columns={'DE_NO_powerline': 'DE-NO',
                               'NO_DE_powerline': 'NO-DE'})
-cable.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+cable.plot(legend='reverse', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Leistung in GW')
 plt.ylim(0, max(cable.sum(axis=1)) * 1.2)
@@ -637,55 +637,35 @@ plt.tight_layout()
 plt.show()
 
 
-# %% duraction curve for prices
-file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
-
-df = pd.read_csv('results/' + file_name, parse_dates=[0],
-                 index_col=0, keep_date_col=True)
-
-power_price_real = pd.read_csv('price_eex_day_ahead_2014.csv')
-power_price_real.set_index(df.index, drop=True, inplace=True)
-power_price = pd.concat([power_price_real,
-                         df[['duals']]], axis=1)
-power_price = pd.concat(
-    [power_price[col].sort_values(ascending=False).reset_index(drop=True)
-     for col in power_price], axis=1)
-power_price.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
-plt.xlabel('Stunden des Jahres')
-plt.ylabel('Preis in EUR/MWh')
-plt.tight_layout()
-plt.show()
-
-
-# %% boxplot for prices: monthly
-
-file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
-
-df = pd.read_csv('results/' + file_name, parse_dates=[0],
-                 index_col=0, keep_date_col=True)
-
-df = df[['duals']]
-df['dates'] = df.index
-df['month'] = df.index.month
-
-df_box = df.pivot(index='dates', columns='month', values='duals')
-
-bp = df_box.boxplot(showfliers=False, showmeans=True, return_type='dict')
-plt.xlabel('Monat')
-plt.ylabel('Preis in EUR/MWh')
-plt.tick_params(axis='y')
-plt.tick_params(axis='x')
-plt.legend('')
-
-[[item.set_color('k') for item in bp['boxes']]]
-[[item.set_color('k') for item in bp['fliers']]]
-[[item.set_color('k') for item in bp['medians']]]
-[[item.set_color('k') for item in bp['whiskers']]]
-[[item.set_color('k') for item in bp['caps']]]
-
-[[item.set_markerfacecolor('k') for item in bp['means']]]
-
-plt.show()
+## %% boxplot for prices: monthly
+#
+#file_name = 'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv'
+#
+#df = pd.read_csv('results/' + file_name, parse_dates=[0],
+#                 index_col=0, keep_date_col=True)
+#
+#df = df[['duals']]
+#df['dates'] = df.index
+#df['month'] = df.index.month
+#
+#df_box = df.pivot(index='dates', columns='month', values='duals')
+#
+#bp = df_box.boxplot(showfliers=False, showmeans=True, return_type='dict')
+#plt.xlabel('Monat')
+#plt.ylabel('Preis in EUR/MWh')
+#plt.tick_params(axis='y')
+#plt.tick_params(axis='x')
+#plt.legend('')
+#
+#[[item.set_color('k') for item in bp['boxes']]]
+#[[item.set_color('k') for item in bp['fliers']]]
+#[[item.set_color('k') for item in bp['medians']]]
+#[[item.set_color('k') for item in bp['whiskers']]]
+#[[item.set_color('k') for item in bp['caps']]]
+#
+#[[item.set_markerfacecolor('k') for item in bp['means']]]
+#
+#plt.show()
 
 ## %% spline interpolation
 #
@@ -784,7 +764,7 @@ plt.show()
 # histogram
 df_prices \
     .plot(kind='hist', bins=25, normed=True, subplots=True, sharex=True,
-          sharey=True, layout=(7, 2), cmap=cm.get_cmap('RdYlBu'))
+          sharey=True, layout=(7, 2), cmap=cm.get_cmap('Spectral'))
 [ax.legend(loc='upper right') for ax in plt.gcf().axes]
 plt.suptitle('Preis in EUR/MWh (25 Bins)', size=20)
 plt.show()
@@ -793,7 +773,7 @@ plt.show()
 df_prices_duration = pd.concat(
     [df_prices[col].sort_values(ascending=False).reset_index(drop=True)
      for col in df_prices], axis=1)
-df_prices_duration.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+df_prices_duration.plot(legend='reverse', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -802,7 +782,7 @@ plt.show()
 # duration curves for base scenarios
 df_prices_duration[['NEP-2025',
                     'NEP-2035']].plot(legend='reverse',
-                                           cmap=cm.get_cmap('RdYlBu'))
+                                      cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.ylabel('Preis in EUR/MWh')
 plt.tight_layout()
@@ -815,31 +795,29 @@ plt.show()
 # %% plot of annual production for scenarios
 
 files = {
-    'nep_2014_base':
-        'scenario_nep_2014_2016-08-04 12:04:42.180425_DE.csv',
-    'nep_2025_base':
+    'NEP-2025':
         'scenario_nep_2025_2016-08-16 14:52:22.118405_DE.csv',
-    'nep_2035_base':
+    'NEP-2035':
         'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv',
-    'nep_2035_ee_plus_25':
+    'NEP-2035-ee+25':
         'scenario_nep_2035_ee_plus_25_2016-08-09 16:27:06.904477_DE.csv',
-    'nep_2035_ee_minus_25':
+    'NEP-2035-ee-25':
         'scenario_nep_2035_ee_minus_25_2016-08-09 16:45:40.295183_DE.csv',
-    'nep_2035_demand_plus_25':
+    'NEP-2035-demand+25':
         'scenario_nep_2035_demand_plus_25_2016-08-10 09:38:10.628613_DE.csv',
-    'nep_2035_demand_minus_25':
+    'NEP-2035-demand-25':
         'scenario_nep_2035_demand_minus_25_2016-08-10 09:50:48.953929_DE.csv',
-    'nep_2035_fuel_plus_25':
+    'NEP-2035-fuel+25':
         'scenario_nep_2035_fuel_plus_25_2016-08-10 12:10:08.246319_DE.csv',
-    'nep_2035_fuel_minus_25':
+    'NEP-2035-fuel-25':
         'scenario_nep_2035_fuel_minus_25_2016-08-10 12:20:30.690439_DE.csv',
-    'nep_2035_co2_plus_25':
+    'NEP-2035-co2+25':
         'scenario_nep_2035_co2_plus_25_2016-08-10 12:37:36.981611_DE.csv',
-    'nep_2035_co2_minus_25':
+    'NEP-2035-co2-25':
         'scenario_nep_2035_co2_minus_25_2016-08-10 12:49:50.740375_DE.csv',
-    'nep_2035_nordlink_plus_25':
+    'NEP-2035-nordlink+25':
         'scenario_nep_2035_nordlink_plus_25_2016-08-10 13:00:08.919877_DE.csv',
-    'nep_2035_nordlink_minus_25':
+    'NEP-2035-nordlink-25':
         'scenario_nep_2035_nordlink_minus_25_2016-08-10 13:10:34.528303_DE.csv'
 }
 
@@ -938,7 +916,7 @@ cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
         'Pumpspeicher (Entladen)', 'Import', 'Ungedeckte Nachfrage',
         'Last', 'Pumpspeicher (Laden)', 'Export', 'Überschüssige Energie']
 
-df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('RdYlBu'))
+df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'))
 plt.title('Jährliche Stromproduktion nach Energieträgern')
 plt.ylabel('TWh')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
@@ -981,7 +959,7 @@ df_dispatch = df_dispatch.rename(columns=en_de)
 cols = ['Pumpspeicher (Entladen)', 'Pumpspeicher (Laden)',
         ]
 df_dispatch['2025-01-13':'2025-01-14'][cols] \
-             .plot(drawstyle='steps', cmap=cm.get_cmap('RdYlBu'))
+             .plot(drawstyle='steps', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('')
 plt.ylabel('Leistung in  GW')
 plt.ylim(0, 1)
@@ -1003,7 +981,7 @@ cols = ['Laufwasser',
 df_duration = pd.concat(
     [df_dispatch[col].sort_values(ascending=False).reset_index(drop=True)
      for col in df_dispatch[cols]], axis=1)
-df_duration.plot(legend='reverse', cmap=cm.get_cmap('RdYlBu'))
+df_duration.plot(legend='reverse', cmap=cm.get_cmap('Spectral'))
 plt.xlabel('Stunden des Jahres')
 plt.xlim(0, 10000)
 plt.ylim(0, 30)
