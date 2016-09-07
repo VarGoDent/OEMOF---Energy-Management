@@ -20,7 +20,7 @@ plt.rcParams['image.cmap'] = 'Spectral'
 #plt.rcParams['figure.dpi'] = 300
 plt.rcParams['figure.figsize'] = (20.0, 12.0)  # inches = px/dpi
 plt.rcParams.update({'font.size': 22.5,
-                     'legend.fontsize': 18,
+                     'legend.fontsize': 20,
                      'legend.loc': 'upper right'})
 
 # read file
@@ -240,7 +240,7 @@ df_dispatch['2014-01-21':'2014-01-27'][cols] \
                    cmap=cm.get_cmap('Spectral'), legend='reverse')
 plt.xlabel('Datum')
 plt.ylabel('Leistung in  GW')
-plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.70)
+plt.ylim(0, max(df_dispatch.sum(axis=1)) * 0.8)
 plt.tight_layout()
 plt.show()
 
@@ -506,7 +506,7 @@ annual_production_2025.plot(kind='bar', legend=True,
                             rot=0)
 plt.xlabel('')
 plt.ylabel('Energieproduktion in  TWh')
-plt.ylim(0, max(annual_production_2025.max()) * 1.25)
+plt.ylim(0, max(annual_production_2025.max()) * 1.4)
 plt.tight_layout()
 plt.show()
 
