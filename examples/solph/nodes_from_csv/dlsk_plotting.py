@@ -275,7 +275,7 @@ annual_production = annual_production[
 annual_production.plot(kind='bar', legend=True, cmap=cm.get_cmap('Spectral'),
                        rot=0)
 plt.xlabel('')
-plt.ylabel('Energieproduktion in  TWh')
+plt.ylabel('Energie in  TWh')
 plt.tight_layout()
 plt.show()
 
@@ -505,7 +505,7 @@ annual_production_2025.plot(kind='bar', legend=True,
                             cmap=cm.get_cmap('Spectral'),
                             rot=0)
 plt.xlabel('')
-plt.ylabel('Energieproduktion in  TWh')
+plt.ylabel('Energie in  TWh')
 plt.ylim(0, max(annual_production_2025.max()) * 1.4)
 plt.tight_layout()
 plt.show()
@@ -925,7 +925,7 @@ cols = ['Biomasse', 'Laufwasser', 'Kernenergie', 'Braunkohle',
 
 df_dispatch[cols].plot(kind='bar', stacked=True, cmap=cm.get_cmap('Spectral'))
 #plt.title('Jährliche Stromproduktion nach Energieträgern')
-plt.ylabel('TWh')
+plt.ylabel('Energie in TWh')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), fontsize=21)
 plt.tight_layout()
 plt.show()
@@ -975,7 +975,7 @@ df_dispatch['2025-01-13':'2025-01-14']['NO_storage_phs_level'] \
              .plot(secondary_y=True, drawstyle='steps', linestyle='--',
                    color='k')
 plt.xlabel('')
-plt.ylabel('Füllstand in  GWh')
+plt.ylabel('Gespeicherte Energie in GWh')
 plt.ylim(0, 10)
 plt.tight_layout()
 plt.show()
