@@ -644,9 +644,38 @@ plt.tight_layout()
 plt.show()
 
 
-# %% boxplot for prices: monthly: 2035-base
+# %% weekly boxplot of prices: monthly: 2035-base
 
 file_name = 'scenario_nep_2035_2016-08-05 15:18:42.431986_DE.csv'
+
+df = pd.read_csv('results/' + file_name, parse_dates=[0],
+                 index_col=0, keep_date_col=True)
+
+df = df[['duals']]
+df['dates'] = df.index
+df['week'] = df.index.week
+
+df_box = df.pivot(index='dates', columns='week', values='duals')
+
+bp = df_box.boxplot()
+plt.xlabel('Woche des Jahres')
+plt.ylabel('Preis in EUR/MWh')
+plt.xticks(range(0, 52, 2), [i for i in range(0, 52, 2)])
+plt.legend(show=False)
+
+[[item.set_color('k') for item in bp['boxes']]]
+[[item.set_color('k') for item in bp['fliers']]]
+[[item.set_color('k') for item in bp['medians']]]
+[[item.set_color('k') for item in bp['whiskers']]]
+[[item.set_color('k') for item in bp['caps']]]
+[[item.set_markerfacecolor('k') for item in bp['means']]]
+
+plt.tight_layout()
+plt.show()
+
+# %% weekly boxplot of prices: monthly: 2035-ee+25
+
+file_name = 'scenario_nep_2035_ee_plus_25_2016-08-09 16:27:06.904477_DE.csv'
 
 df = pd.read_csv('results/' + file_name, parse_dates=[0],
                  index_col=0, keep_date_col=True)
